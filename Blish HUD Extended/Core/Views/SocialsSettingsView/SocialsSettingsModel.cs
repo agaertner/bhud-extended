@@ -38,6 +38,7 @@ namespace Blish_HUD.Extended.Core.Views
         private static readonly IReadOnlyDictionary<SocialType, Texture2D> _socialLogos;
         private static IReadOnlyDictionary<SocialType, string> _socialUrls;
         private static IReadOnlyDictionary<SocialType, string> _socialTexts;
+        private int _timeOutSeconds;
 
         static SocialsSettingsModel()
         {
@@ -62,16 +63,17 @@ namespace Blish_HUD.Extended.Core.Views
             _socialTexts = texts;
         }
 
-        public SocialsSettingsModel(SettingCollection settings, string remoteSocialManifestUrl) : this(settings)
+        public SocialsSettingsModel(SettingCollection settings, string remoteSocialManifestUrl, int timeOutSeconds = 3) : this(settings)
         {
             SocialManifestUrl = remoteSocialManifestUrl;
+            _timeOutSeconds = timeOutSeconds;
         }
 
         internal async Task<bool> LoadSocials()
         {
             if (string.IsNullOrEmpty(SocialManifestUrl)) return true;
             if (_socialUrls != null && _socialTexts != null) return true;
-            var (success, socials) = await TaskUtil.GetJsonResponse<Dictionary<SocialType, Social>>(SocialManifestUrl);
+            var (success, socials) = await TaskUtil.GetJsonResponse<Dictionary<SocialType, Social>>(SocialManifestUrl, _timeOutSeconds);
             if (!success) return true;
             _socialTexts = socials.ToDictionary(x => x.Key, x => x.Value.Title);
             _socialUrls = socials.ToDictionary(x => x.Key, x => x.Value.Url);

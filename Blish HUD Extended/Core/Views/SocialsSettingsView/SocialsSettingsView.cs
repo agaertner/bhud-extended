@@ -61,12 +61,11 @@ namespace Blish_HUD.Extended.Core.Views
 
             _settingFlowPanel = new FlowPanel
             {
-                Size = new Point(buildPanel.Width, buildPanel.Height),
-                Location = new Point(0, _socialFlowPanel?.Height ?? 0),
+                Size = new Point(buildPanel.Width - 13, buildPanel.Height),
+                Location = new Point(-3, _socialFlowPanel?.Bottom ?? 0),
                 FlowDirection = ControlFlowDirection.SingleTopToBottom,
                 ControlPadding = new Vector2(5, 2),
-                OuterControlPadding = new Vector2(10, 15),
-                WidthSizingMode = SizingMode.Fill,
+                OuterControlPadding = new Vector2(0, 0),
                 HeightSizingMode = SizingMode.AutoSize,
                 AutoSizePadding = new Point(0, 15),
                 Parent = buildPanel
@@ -103,13 +102,13 @@ namespace Blish_HUD.Extended.Core.Views
 
             _socialFlowPanel = new FlowPanel
             {
-                Size = new Point(buildPanel.Width, 78),
+                Size = new Point(buildPanel.Width - 17, 51),
                 Location = new Point(0, 0),
                 FlowDirection = ControlFlowDirection.SingleRightToLeft,
-                ControlPadding = new Vector2(27, 2),
-                OuterControlPadding = new Vector2(27, 2),
-                WidthSizingMode = SizingMode.Fill,
-                ShowBorder = true,
+                ControlPadding = new Vector2(3, 2),
+                OuterControlPadding = new Vector2(1, 3),
+                ShowBorder = false,
+                ShowTint = true,
                 Parent = buildPanel
             };
 
@@ -119,7 +118,7 @@ namespace Blish_HUD.Extended.Core.Views
                 var socialBtn = new StandardButton
                 {
                     Parent = _socialFlowPanel,
-                    Size = new Point((int)GameService.Content.DefaultFont14.MeasureString(text).Width + 48, 46),
+                    Size = new Point((int)GameService.Content.DefaultFont14.MeasureString(text).Width + 48, 45),
                     Text = text,
                     Icon = this.Presenter.Model.GetSocialLogo(social),
                     ResizeIcon = true,

@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace Blish_HUD.Extended
 {
     public class TaskUtil
@@ -41,12 +42,24 @@ namespace Blish_HUD.Extended
             }
         }
 
-        public static async Task<(bool, T)> GetJsonResponse<T>(string request)
+        public static bool TryParseJson<T>(string json, out T result)
+        {
+            bool success = true;
+            var settings = new JsonSerializerSettings
+            {
+                Error = (_, args) => { success = false; args.ErrorContext.Handled = true; },
+                MissingMemberHandling = MissingMemberHandling.Error
+            };
+            result = JsonConvert.DeserializeObject<T>(json, settings);
+            return success;
+        }
+
+        public static async Task<(bool, T)> GetJsonResponse<T>(string request, int timeOutSeconds = 10)
         {
             try
             {
-                var rawJson = await request.AllowHttpStatus(HttpStatusCode.NotFound).AllowHttpStatus("200").GetStringAsync();
-                return (true, JsonConvert.DeserializeObject<T>(rawJson));
+                var rawJson = await request.AllowHttpStatus(HttpStatusCode.NotFound).AllowHttpStatus("200").WithTimeout(timeOutSeconds).GetStringAsync();
+                return (TryParseJson<T>(rawJson, out var result), result);
             }
             catch (FlurlHttpTimeoutException ex)
             {
