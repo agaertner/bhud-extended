@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>agaertner</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <!-- <icon>icon.png</icon> -->
+	<repository type="git" url="https://github.com/agaertner/Blish-HUD-Extended"/>
+    <description>Extensions to make Blish-HUD more awesome.</description>
+    <releaseNotes>Initialize release.</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>gw2 blish</tags>
+  </metadata>
+</package>

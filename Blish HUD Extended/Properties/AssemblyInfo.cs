@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Blish_HUD.Extended")]
-[assembly: AssemblyDescription("Extensions to make Blish-HUD more awesome")]
+[assembly: AssemblyTitle("Blish-HUD-Extended")]
+[assembly: AssemblyDescription("Extensions to make Blish-HUD more awesome.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Inquest")]
-[assembly: AssemblyProduct("Blish_HUD.Extended")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Blish-HUD-Extended")]
 [assembly: AssemblyCopyright("Copyright © agaertner 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("faff748d-6e1d-456c-92fb-4562e7f117a4")]
+[assembly: Guid("33c90e9c-3308-4a0e-8dfd-5855f296a72c")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("0.1.0.0")]
+[assembly: AssemblyFileVersion("0.1.0.0")]

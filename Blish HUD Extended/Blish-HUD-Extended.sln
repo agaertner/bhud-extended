@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blish-HUD-Extended", "Blish-HUD-Extended.csproj", "{FAFF748D-6E1D-456C-92FB-4562E7F117A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blish-HUD-Extended", "Blish-HUD-Extended.csproj", "{33C90E9C-3308-4A0E-8DFD-5855F296A72C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FAFF748D-6E1D-456C-92FB-4562E7F117A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FAFF748D-6E1D-456C-92FB-4562E7F117A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FAFF748D-6E1D-456C-92FB-4562E7F117A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FAFF748D-6E1D-456C-92FB-4562E7F117A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33C90E9C-3308-4A0E-8DFD-5855F296A72C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33C90E9C-3308-4A0E-8DFD-5855F296A72C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33C90E9C-3308-4A0E-8DFD-5855F296A72C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33C90E9C-3308-4A0E-8DFD-5855F296A72C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {429AC5C7-AC45-47E2-9340-0BC43267EC12}
+		SolutionGuid = {6DB5F705-6FC2-442D-87C3-4CDF20E64D7B}
 	EndGlobalSection
 EndGlobal
