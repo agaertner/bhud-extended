@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Blish-HUD-Extended")]
 [assembly: AssemblyDescription("Extensions to make Blish-HUD more awesome.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("agaertner")]
 [assembly: AssemblyProduct("Blish-HUD-Extended")]
 [assembly: AssemblyCopyright("Copyright © agaertner 2022")]
 [assembly: AssemblyTrademark("")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+[assembly: AssemblyVersion("0.1.0.2")]
+[assembly: AssemblyFileVersion("0.1.0.2")]

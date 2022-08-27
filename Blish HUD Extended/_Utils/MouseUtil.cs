@@ -95,9 +95,15 @@ namespace Blish_HUD.Extended
             { MouseButton.XBUTTON, 0x020D }
         };
 
-        /// <summary>
-        /// Struct representing a point.
-        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT {
             public int X;
@@ -119,6 +125,20 @@ namespace Blish_HUD.Extended
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern bool PostMessage(IntPtr hWnd, uint msg, uint wParam, int lParam); // sends a message asynchronously.
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
         /// <summary>
         /// Presses a mouse button.
@@ -261,12 +281,24 @@ namespace Blish_HUD.Extended
         }
 
         /// <summary>
-        /// Gets the cursors absolute screen position.
+        /// Gets the cursors screen position relative to the window.
         /// </summary>
         public static Point GetPosition() {
-            POINT lpPoint;
-            GetCursorPos(out lpPoint);
-            return lpPoint;
+            var hWnd = GameService.GameIntegration.Gw2Instance.Gw2WindowHandle;
+
+            if (!GetCursorPos(out var pos)
+                || !ScreenToClient(hWnd, ref pos)
+                || !GetWindowRect(hWnd, out var wndBounds)
+                || !GetClientRect(hWnd, out var clientBounds)) return Point.Empty;
+
+            // Border thickness
+            var widthOffset = wndBounds.Right - wndBounds.Left - (clientBounds.Right - clientBounds.Left);
+            // Titlebar height + Border thickness
+            var heightOffset = wndBounds.Bottom - wndBounds.Top - (clientBounds.Bottom - clientBounds.Top);
+            pos.X -= wndBounds.Left + widthOffset;
+            pos.Y -= wndBounds.Top + heightOffset;
+
+            return !ClientToScreen(hWnd, ref pos) ? Point.Empty : new Point(pos.X, pos.Y);
         }
 
         /// <summary>

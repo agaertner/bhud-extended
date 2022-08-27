@@ -58,23 +58,8 @@ namespace Blish_HUD.Extended.Core.Views
 
         public SocialsSettingsModel(SettingCollection settings, Dictionary<SocialType, string> urls, Dictionary<SocialType, string> texts) : this(settings)
         {
-            _socialUrls = urls ?? new Dictionary<SocialType, string>
-            {
-                {SocialType.KoFi, "https://ko-fi.com/Nekres"},
-                {SocialType.Discord, "https://discord.gg/B5W5TdxRu9"},
-                {SocialType.GitHub, "https://github.com/agaertner"}
-            };
-            _socialTexts = texts ?? new Dictionary<SocialType, string>
-            {
-                {SocialType.KoFi, "Support Me on Ko-Fi"},
-                {SocialType.Twitch, "Twitch"},
-                {SocialType.Discord, "Discord"},
-                {SocialType.GitHub, "GitHub"},
-                {SocialType.Instagram, "Instagram"},
-                {SocialType.Patreon, "Patreon"},
-                {SocialType.Twitter, "Twitter"},
-                {SocialType.YouTube, "YouTube"}
-            };
+            _socialUrls = urls;
+            _socialTexts = texts;
         }
 
         public SocialsSettingsModel(SettingCollection settings, string remoteSocialManifestUrl) : this(settings)
