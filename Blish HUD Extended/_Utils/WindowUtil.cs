@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 namespace Blish_HUD.Extended
 {
-    public class WindowUtil
+    public static class WindowUtil
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct RECT
