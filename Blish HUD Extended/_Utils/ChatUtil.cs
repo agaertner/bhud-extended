@@ -84,7 +84,7 @@ namespace Blish_HUD.Extended
         private static void UnFocus()
         {
             if (!WindowUtil.GetInnerBounds(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, out var bounds)) return;
-            MouseUtil.Click(MouseUtil.MouseButton.LEFT, bounds.Right - 1, bounds.Top - 1);
+            MouseUtil.Click(MouseUtil.MouseButton.LEFT, bounds.Right - 1, bounds.Top + 1);
         }
     }
 }
