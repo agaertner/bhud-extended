@@ -6,20 +6,17 @@ namespace Blish_HUD.Extended
 {
     public static class SpriteBatchExtensions
     {
-        public static void DrawBorderOnCtrl(this SpriteBatch spriteBatch, Control ctrl, Rectangle bounds, int borderSize)
+        public static void DrawRectangleOnCtrl(this SpriteBatch spriteBatch, Control ctrl, Rectangle bounds, int lineWidth, Color color)
         {
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X - borderSize, bounds.Y - borderSize, bounds.Width + borderSize, borderSize), Color.Black);
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X - borderSize, bounds.Y, borderSize, bounds.Height + borderSize), Color.Black);
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X, bounds.Y + bounds.Height, bounds.Width + borderSize, borderSize), Color.Black);
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X + bounds.Width, bounds.Y - borderSize, borderSize, bounds.Height + borderSize), Color.Black);
+            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X - lineWidth, bounds.Y - lineWidth, bounds.Width + lineWidth, lineWidth), color);
+            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X - lineWidth, bounds.Y, lineWidth, bounds.Height + lineWidth), color);
+            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X, bounds.Y + bounds.Height, bounds.Width + lineWidth, lineWidth), color);
+            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X + bounds.Width, bounds.Y - lineWidth, lineWidth, bounds.Height + lineWidth), color);
         }
 
-        public static void DrawBorderOnCtrl(this SpriteBatch spriteBatch, Control ctrl, Rectangle bounds, int borderSize, Color color)
+        public static void DrawRectangleOnCtrl(this SpriteBatch spriteBatch, Control ctrl, Rectangle bounds, int lineWidth)
         {
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X - borderSize, bounds.Y - borderSize, bounds.Width + borderSize, borderSize), color);
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X - borderSize, bounds.Y, borderSize, bounds.Height + borderSize), color);
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X, bounds.Y + bounds.Height, bounds.Width + borderSize, borderSize), color);
-            spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, new Rectangle(bounds.X + bounds.Width, bounds.Y - borderSize, borderSize, bounds.Height + borderSize), color);
+            DrawRectangleOnCtrl(spriteBatch, ctrl, bounds, lineWidth, Color.Black);
         }
     }
 }

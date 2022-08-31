@@ -66,18 +66,19 @@ namespace Blish_HUD.Extended
             KeyboardUtil.Release(160);
             KeyboardUtil.Release(161);
 
-            if (messageKey.ModifierKeys != ModifierKeys.None)
+            var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
+            if (hasModifierKey)
             {
-                KeyboardUtil.Press(ModifierLookUp[messageKey.ModifierKeys]);
+                KeyboardUtil.Press(modifierKey);
             }
             if (messageKey.PrimaryKey != Keys.None)
             {
                 KeyboardUtil.Press((int)messageKey.PrimaryKey);
                 KeyboardUtil.Release((int)messageKey.PrimaryKey);
             }
-            if (messageKey.ModifierKeys != ModifierKeys.None)
+            if (hasModifierKey)
             {
-                KeyboardUtil.Release(ModifierLookUp[messageKey.ModifierKeys]);
+                KeyboardUtil.Release(modifierKey);
             }
         }
 

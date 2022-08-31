@@ -188,7 +188,7 @@ namespace Blish_HUD.Extended {
         }
 
         /// <summary>
-        /// Performs a keystroke inwhich a key is pressed and immediately released once.
+        /// Performs a keystroke in which a key is pressed and immediately released once.
         /// </summary>
         /// <param name="keyCode">Virtual key code of the key to stroke.</param>
         /// <param name="sendToSystem">Set if key message (or a combination of such) cannot be correctly interpreted by the game client.</param>

@@ -12,15 +12,20 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Extracts a file from the module archive.
         /// </summary>
-        /// <param name="contentsManager">The module's contents manager object.</param>
+        /// <param name="contentsManager">The module's assigned <see cref="ContentsManager"/> object.</param>
         /// <param name="refFilePath">A file path relative to the ref folder inside the module archive.</param>
         /// <param name="outFilePath">Destination of the file.</param>
         /// <param name="overwrite">If any existing file at the destination should be overwritten.</param>
         public static async Task Extract(this ContentsManager contentsManager, string refFilePath, string outFilePath, bool overwrite = true)
         {
-            if (string.IsNullOrEmpty(outFilePath) || string.IsNullOrEmpty(refFilePath))
+            if (string.IsNullOrEmpty(refFilePath))
             {
-                throw new ArgumentException("File paths cannot be empty.");
+                throw new ArgumentException($"{nameof(refFilePath)} cannot be empty.", nameof(refFilePath));
+            }
+
+            if (string.IsNullOrEmpty(outFilePath))
+            {
+                throw new ArgumentException($"{nameof(outFilePath)} cannot be empty.", nameof(outFilePath));
             }
 
             if (!overwrite && File.Exists(outFilePath)) return;
