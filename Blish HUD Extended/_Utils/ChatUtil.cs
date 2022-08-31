@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Blish_HUD.Input;
+using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Blish_HUD.Input;
-using Microsoft.Xna.Framework.Input;
 
 namespace Blish_HUD.Extended
 {
@@ -35,7 +35,6 @@ namespace Blish_HUD.Extended
             Thread.Sleep(1);
             KeyboardUtil.Release(162, true);
             KeyboardUtil.Stroke(13);
-            UnFocus();
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
         }
@@ -84,7 +83,8 @@ namespace Blish_HUD.Extended
 
         private static void UnFocus()
         {
-            MouseUtil.Click(MouseUtil.MouseButton.LEFT, GameService.Graphics.WindowWidth - 1);
+            if (!WindowUtil.GetInnerBounds(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, out var bounds)) return;
+            MouseUtil.Click(MouseUtil.MouseButton.LEFT, bounds.Right - 1, bounds.Top - 1);
         }
     }
 }

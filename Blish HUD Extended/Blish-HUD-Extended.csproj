@@ -267,6 +267,7 @@
     <Compile Include="_Utils\TaskUtil.cs" />
     <Compile Include="_Utils\TyrianTimeUtil.cs" />
     <Compile Include="_Utils\WinApi\Input.cs" />
+    <Compile Include="_Utils\WindowUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\discord_logo.png" />
