@@ -96,9 +96,9 @@ namespace Blish_HUD.Extended.Core.Views
 
         private void BuildSocialsPanel(Container buildPanel)
         {
-            var socials = this.Presenter.Model.GetSocials();
+            var socials = this.Presenter.Model.GetSocials().ToList();
 
-            if (socials == null || !socials.Any()) return;
+            if (!socials.Any()) return;
 
             _socialFlowPanel = new FlowPanel
             {
@@ -112,7 +112,7 @@ namespace Blish_HUD.Extended.Core.Views
                 Parent = buildPanel
             };
 
-            foreach (var social in this.Presenter.Model.GetSocials())
+            foreach (var social in socials)
             {
                 var text = this.Presenter.Model.GetSocialText(social);
                 var socialBtn = new StandardButton

@@ -36,8 +36,8 @@ namespace Blish_HUD.Extended.Core.Views
         internal SettingCollection Settings { get; }
 
         private static readonly IReadOnlyDictionary<SocialType, Texture2D> _socialLogos;
-        private static IReadOnlyDictionary<SocialType, string> _socialUrls;
-        private static IReadOnlyDictionary<SocialType, string> _socialTexts;
+        private IReadOnlyDictionary<SocialType, string> _socialUrls;
+        private IReadOnlyDictionary<SocialType, string> _socialTexts;
         private int _timeOutSeconds;
 
         static SocialsSettingsModel()

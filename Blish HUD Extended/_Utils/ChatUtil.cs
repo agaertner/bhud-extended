@@ -83,7 +83,7 @@ namespace Blish_HUD.Extended
 
         private static void UnFocus()
         {
-            MouseUtil.Click(MouseUtil.MouseButton.LEFT, MouseUtil.GetPosition().X - 1);
+            MouseUtil.Click(MouseUtil.MouseButton.LEFT, GameService.Graphics.WindowWidth - 1);
         }
     }
 }
