@@ -44,9 +44,12 @@ namespace Blish_HUD.Extended.Core.Views
         {
             var socialLogos = new Dictionary<SocialType, Texture2D>();
             var assembly = typeof(SocialsSettingsModel).GetTypeInfo().Assembly;
-            foreach (var social in Enum.GetValues(typeof(SocialType)).Cast<SocialType>())
+            var socials = Enum.GetValues(typeof(SocialType)).Cast<SocialType>();
+            var files = assembly.GetFiles();
+            foreach (var social in socials)
             {
-                using var file = assembly.GetManifestResourceStream($"Blish_HUD.Extended.Resources.{social.ToString().ToLowerInvariant()}_logo.png");
+                var file = files.FirstOrDefault(x => x.Name.EndsWith($"{social.ToString().ToLowerInvariant()}_logo.png"));
+                if (file == null) continue;
                 socialLogos.Add(social, Texture2D.FromStream(GameService.Graphics.GraphicsDevice, file));
             }
             _socialLogos = socialLogos;
