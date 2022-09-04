@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -45,11 +46,12 @@ namespace Blish_HUD.Extended.Core.Views
             var socialLogos = new Dictionary<SocialType, Texture2D>();
             var assembly = typeof(SocialsSettingsModel).GetTypeInfo().Assembly;
             var socials = Enum.GetValues(typeof(SocialType)).Cast<SocialType>();
-            var files = assembly.GetFiles();
+            var resourceNames = assembly.GetManifestResourceNames();
             foreach (var social in socials)
             {
-                var file = files.FirstOrDefault(x => x.Name.EndsWith($"{social.ToString().ToLowerInvariant()}_logo.png"));
-                if (file == null) continue;
+                var resource = resourceNames.FirstOrDefault(x => x.EndsWith($"{social.ToString().ToLowerInvariant()}_logo.png"));
+                if (resource == null) continue;
+                using var file = assembly.GetManifestResourceStream(resource);
                 socialLogos.Add(social, Texture2D.FromStream(GameService.Graphics.GraphicsDevice, file));
             }
             _socialLogos = socialLogos;
