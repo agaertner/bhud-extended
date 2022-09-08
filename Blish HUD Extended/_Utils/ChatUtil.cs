@@ -23,8 +23,7 @@ namespace Blish_HUD.Extended
         public static async Task Send(string text, KeyBinding messageKey)
         {
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
-            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text)) return;
-            Focus(messageKey);
+            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
             KeyboardUtil.Press(162, true);
             KeyboardUtil.Stroke(65, true);
             Thread.Sleep(1);
@@ -47,8 +46,7 @@ namespace Blish_HUD.Extended
         public static async Task Insert(string text, KeyBinding messageKey)
         {
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
-            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text)) return;
-            Focus(messageKey);
+            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
             KeyboardUtil.Press(162, true);
             KeyboardUtil.Stroke(86, true);
             Thread.Sleep(1);
@@ -57,9 +55,9 @@ namespace Blish_HUD.Extended
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
         }
 
-        private static void Focus(KeyBinding messageKey)
+        private static bool Focus(KeyBinding messageKey)
         {
-            UnFocus();
+            if (!GameService.Gw2Mumble.IsAvailable || GameService.Gw2Mumble.UI.IsTextInputFocused) return false;
 
             // Tell the game to release the shift keys so chat can be opened.
             KeyboardUtil.Release(160);
@@ -79,12 +77,7 @@ namespace Blish_HUD.Extended
             {
                 KeyboardUtil.Release(modifierKey);
             }
-        }
-
-        private static void UnFocus()
-        {
-            if (!WindowUtil.GetInnerBounds(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, out var bounds)) return;
-            MouseUtil.Click(MouseUtil.MouseButton.LEFT, bounds.Right - 1, bounds.Top + 1);
+            return true;
         }
     }
 }
