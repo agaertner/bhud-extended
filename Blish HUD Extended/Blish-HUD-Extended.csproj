@@ -258,8 +258,10 @@
     <Compile Include="Core\Views\SocialsSettingsView\SocialsSettingsView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="_Extensions\ContentsManagerExtensions.cs" />
+    <Compile Include="_Extensions\MapExtensions.cs" />
     <Compile Include="_Extensions\MapTypeExtensions.cs" />
     <Compile Include="_Extensions\SpriteBatchExtensions.cs" />
+    <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\ChatUtil.cs" />
     <Compile Include="_Utils\KeyboardUtil.cs" />
