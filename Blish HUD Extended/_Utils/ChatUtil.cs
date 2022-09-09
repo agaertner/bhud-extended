@@ -24,16 +24,17 @@ namespace Blish_HUD.Extended
         {
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
             if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
-            KeyboardUtil.Press(162, true);
-            KeyboardUtil.Stroke(65, true);
-            Thread.Sleep(1);
-            KeyboardUtil.Release(162, true);
-            KeyboardUtil.Stroke(46, true);
-            KeyboardUtil.Press(162, true);
-            KeyboardUtil.Stroke(86, true);
-            Thread.Sleep(1);
-            KeyboardUtil.Release(162, true);
-            KeyboardUtil.Stroke(13);
+            KeyboardUtil.Press(162, true); // LControl
+            KeyboardUtil.Stroke(65, true); // A
+            KeyboardUtil.Release(162, true); // LControl
+            Thread.Sleep(25);
+            KeyboardUtil.Stroke(46, true); // Del
+            Thread.Sleep(25);
+            KeyboardUtil.Press(162, true); // LControl
+            KeyboardUtil.Stroke(86, true); // V
+            KeyboardUtil.Release(162, true); // LControl
+            Thread.Sleep(25); 
+            KeyboardUtil.Stroke(13, true); // Enter
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
         }
@@ -47,10 +48,9 @@ namespace Blish_HUD.Extended
         {
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
             if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
-            KeyboardUtil.Press(162, true);
-            KeyboardUtil.Stroke(86, true);
-            Thread.Sleep(1);
-            KeyboardUtil.Release(162, true);
+            KeyboardUtil.Press(162, true); // LControl
+            KeyboardUtil.Stroke(86, true); // V
+            KeyboardUtil.Release(162, true); // LControl
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
         }
@@ -66,16 +66,15 @@ namespace Blish_HUD.Extended
             var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
             if (hasModifierKey)
             {
-                KeyboardUtil.Press(modifierKey);
+                KeyboardUtil.Press(modifierKey, true);
             }
             if (messageKey.PrimaryKey != Keys.None)
             {
-                KeyboardUtil.Press((int)messageKey.PrimaryKey);
-                KeyboardUtil.Release((int)messageKey.PrimaryKey);
+                KeyboardUtil.Stroke((int)messageKey.PrimaryKey, true);
             }
             if (hasModifierKey)
             {
-                KeyboardUtil.Release(modifierKey);
+                KeyboardUtil.Release(modifierKey, true);
             }
             return true;
         }
