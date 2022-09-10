@@ -34,7 +34,7 @@ namespace Blish_HUD.Extended
             KeyboardUtil.Stroke(86, true); // V
             KeyboardUtil.Release(162, true); // LControl
             Thread.Sleep(25); 
-            KeyboardUtil.Stroke(13, true); // Enter
+            KeyboardUtil.Stroke(13); // Enter
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
         }
