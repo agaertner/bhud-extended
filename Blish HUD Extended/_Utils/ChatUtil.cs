@@ -27,10 +27,12 @@ namespace Blish_HUD.Extended
             Thread.Sleep(1);
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(65, true); // A
+            Thread.Sleep(1);
             KeyboardUtil.Release(162, true); // LControl
             KeyboardUtil.Stroke(46, true); // Del
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(86, true); // V
+            Thread.Sleep(1);
             KeyboardUtil.Release(162, true); // LControl
             Thread.Sleep(1);
             KeyboardUtil.Stroke(13); // Enter
@@ -50,6 +52,7 @@ namespace Blish_HUD.Extended
             Thread.Sleep(1);
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(86, true); // V
+            Thread.Sleep(1);
             KeyboardUtil.Release(162, true); // LControl
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
