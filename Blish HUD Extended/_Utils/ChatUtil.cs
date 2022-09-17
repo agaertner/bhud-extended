@@ -32,6 +32,7 @@ namespace Blish_HUD.Extended
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(86, true); // V
             KeyboardUtil.Release(162, true); // LControl
+            Thread.Sleep(1);
             KeyboardUtil.Stroke(13); // Enter
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
@@ -46,6 +47,7 @@ namespace Blish_HUD.Extended
         {
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
             if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
+            Thread.Sleep(1);
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(86, true); // V
             KeyboardUtil.Release(162, true); // LControl
