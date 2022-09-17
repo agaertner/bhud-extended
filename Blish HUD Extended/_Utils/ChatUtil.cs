@@ -26,14 +26,11 @@ namespace Blish_HUD.Extended
             if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(65, true); // A
-            Thread.Sleep(2);
             KeyboardUtil.Release(162, true); // LControl
             KeyboardUtil.Stroke(46, true); // Del
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(86, true); // V
-            Thread.Sleep(2);
             KeyboardUtil.Release(162, true); // LControl
-            Thread.Sleep(2);
             KeyboardUtil.Stroke(13); // Enter
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
@@ -50,7 +47,6 @@ namespace Blish_HUD.Extended
             if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(86, true); // V
-            Thread.Sleep(2);
             KeyboardUtil.Release(162, true); // LControl
             if (prevClipboardContent == null) return;
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
@@ -58,7 +54,7 @@ namespace Blish_HUD.Extended
 
         private static bool Focus(KeyBinding messageKey)
         {
-            if (!GameService.Gw2Mumble.IsAvailable || GameService.Gw2Mumble.UI.IsTextInputFocused) return false;
+            if (IsBusy()) return false;
 
             // Tell the game to release the shift keys so chat can be opened.
             KeyboardUtil.Release(160);
@@ -78,6 +74,15 @@ namespace Blish_HUD.Extended
                 KeyboardUtil.Release(modifierKey, true);
             }
             return true;
+        }
+
+        private static bool IsBusy()
+        {
+            return !GameService.Gw2Mumble.IsAvailable 
+                   || !GameService.GameIntegration.Gw2Instance.Gw2IsRunning
+                   || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus
+                   || !GameService.GameIntegration.Gw2Instance.IsInGame
+                   || GameService.Gw2Mumble.UI.IsTextInputFocused;
         }
     }
 }
