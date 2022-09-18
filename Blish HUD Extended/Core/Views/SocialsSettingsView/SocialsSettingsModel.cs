@@ -1,13 +1,12 @@
 ﻿using Blish_HUD.Settings;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Blish_HUD.Extended.Core.Views
 {
@@ -52,7 +51,8 @@ namespace Blish_HUD.Extended.Core.Views
                 var resource = resourceNames.FirstOrDefault(x => x.EndsWith($"{social.ToString().ToLowerInvariant()}_logo.png"));
                 if (resource == null) continue;
                 using var file = assembly.GetManifestResourceStream(resource);
-                socialLogos.Add(social, Texture2D.FromStream(GameService.Graphics.GraphicsDevice, file));
+                using var gdx = GameService.Graphics.LendGraphicsDeviceContext();
+                socialLogos.Add(social, Texture2D.FromStream(gdx.GraphicsDevice, file));
             }
             _socialLogos = socialLogos;
         }
