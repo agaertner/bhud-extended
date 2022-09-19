@@ -335,6 +335,7 @@ namespace Blish_HUD.Extended
                 uint wParam = (uint)VirtualButtonShort[button];
                 int lParam = xPos | (yPos << 16);
                 PostMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_BUTTONDBLCLK[button], wParam, lParam);
+                PostMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_BUTTONUP[button], wParam, lParam);
             }
         }
     }
