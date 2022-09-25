@@ -22,8 +22,13 @@ namespace Blish_HUD.Extended
         /// <param name="messageKey">The key which is used to open the message box.</param>
         public static async Task Send(string text, KeyBinding messageKey)
         {
+            if (!IsTextValid(text) || !Focus(messageKey)) return;
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
-            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
+            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text))
+            {
+                await SetUnicodeBytesAsync(prevClipboardContent);
+                return;
+            }
             Thread.Sleep(1);
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(65, true); // A
@@ -36,8 +41,7 @@ namespace Blish_HUD.Extended
             KeyboardUtil.Release(162, true); // LControl
             Thread.Sleep(1);
             KeyboardUtil.Stroke(13); // Enter
-            if (prevClipboardContent == null) return;
-            await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
+            await SetUnicodeBytesAsync(prevClipboardContent);
         }
 
         /// <summary>
@@ -47,20 +51,24 @@ namespace Blish_HUD.Extended
         /// <param name="messageKey">The key which is used to open the message box.</param>
         public static async Task Insert(string text, KeyBinding messageKey)
         {
+            if (!IsTextValid(text) || !Focus(messageKey)) return;
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
-            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text) || !Focus(messageKey)) return;
+            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text))
+            {
+                await SetUnicodeBytesAsync(prevClipboardContent);
+                return;
+            }
             Thread.Sleep(1);
             KeyboardUtil.Press(162, true); // LControl
             KeyboardUtil.Stroke(86, true); // V
             Thread.Sleep(1);
             KeyboardUtil.Release(162, true); // LControl
-            if (prevClipboardContent == null) return;
-            await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
+            await SetUnicodeBytesAsync(prevClipboardContent);
         }
 
         private static bool Focus(KeyBinding messageKey)
         {
-            if (IsBusy()) return false;
+            if (IsBusy() || messageKey == null || messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None) return false;
 
             // Tell the game to release the shift keys so chat can be opened.
             KeyboardUtil.Release(160);
@@ -80,6 +88,18 @@ namespace Blish_HUD.Extended
                 KeyboardUtil.Release(modifierKey, true);
             }
             return true;
+        }
+
+        private static async Task SetUnicodeBytesAsync(byte[] clipboardContent)
+        {
+            if (clipboardContent == null) return;
+            await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
+        }
+
+        private static bool IsTextValid(string text)
+        {
+            return !string.IsNullOrEmpty(text) && text.Length < 200;
+            // More checks? (Symbols: https://wiki.guildwars2.com/wiki/User:MithranArkanere/Charset)
         }
 
         private static bool IsBusy()
