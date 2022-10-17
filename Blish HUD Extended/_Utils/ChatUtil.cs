@@ -8,9 +8,10 @@ namespace Blish_HUD.Extended
 {
     public static class ChatUtil
     {
-        private static Logger _logger = Logger.GetLogger(typeof(ChatUtil));
-        private const int MaxMessageLength = 199;
+        public const int MAX_MESSAGE_LENGTH = 199;
 
+        private static Logger _logger = Logger.GetLogger(typeof(ChatUtil));
+        
         private static readonly IReadOnlyDictionary<ModifierKeys, int> ModifierLookUp = new Dictionary<ModifierKeys, int>
         {
             {ModifierKeys.Alt, 18},
@@ -125,12 +126,17 @@ namespace Blish_HUD.Extended
                 _logger.Debug($"Invalid chat message. Argument '{nameof(text)}' was null or empty.");
                 return false;
             }
-            if (text.Length > 199)
+            if (text.Length > MAX_MESSAGE_LENGTH)
             {
-                _logger.Warn($"Invalid chat message. Argument '{nameof(text)}' exceeds limit of {MaxMessageLength} characters. Value: \"{text.Substring(0, 25)}[..+{MaxMessageLength-25}]\"");
+                _logger.Warn($"Invalid chat message. Argument '{nameof(text)}' exceeds limit of {MAX_MESSAGE_LENGTH} characters. Value: \"{text.Substring(0, 25)}[..+{MAX_MESSAGE_LENGTH-25}]\"");
                 return false;
             }
             return true;
+        }
+
+        public static bool IsLengthValid(string message)
+        {
+            return message.Length <= MAX_MESSAGE_LENGTH;
         }
     }
 }
