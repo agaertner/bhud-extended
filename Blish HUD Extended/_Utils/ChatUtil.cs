@@ -8,6 +8,9 @@ namespace Blish_HUD.Extended
 {
     public static class ChatUtil
     {
+        private static Logger _logger = Logger.GetLogger(typeof(ChatUtil));
+        private const int MaxMessageLength = 199;
+
         private static readonly IReadOnlyDictionary<ModifierKeys, int> ModifierLookUp = new Dictionary<ModifierKeys, int>
         {
             {ModifierKeys.Alt, 18},
@@ -22,7 +25,11 @@ namespace Blish_HUD.Extended
         /// <param name="messageKey">The key which is used to open the message box.</param>
         public static async Task Send(string text, KeyBinding messageKey)
         {
-            if (!IsTextValid(text) || !Focus(messageKey)) return;
+            if (!IsTextValid(text) || !Focus(messageKey))
+            {
+                return;
+            }
+
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
             if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text))
             {
@@ -51,7 +58,10 @@ namespace Blish_HUD.Extended
         /// <param name="messageKey">The key which is used to open the message box.</param>
         public static async Task Insert(string text, KeyBinding messageKey)
         {
-            if (!IsTextValid(text) || !Focus(messageKey)) return;
+            if (!IsTextValid(text) || !Focus(messageKey))
+            {
+                return;
+            }
             var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
             if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text))
             {
@@ -68,7 +78,10 @@ namespace Blish_HUD.Extended
 
         private static bool Focus(KeyBinding messageKey)
         {
-            if (IsBusy() || messageKey == null || messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None) return false;
+            if (IsBusy() || messageKey == null || messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None)
+            {
+                return false;
+            }
 
             // Tell the game to release the shift keys so chat can be opened.
             KeyboardUtil.Release(160);
@@ -96,12 +109,6 @@ namespace Blish_HUD.Extended
             await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
         }
 
-        private static bool IsTextValid(string text)
-        {
-            return !string.IsNullOrEmpty(text) && text.Length < 200;
-            // More checks? (Symbols: https://wiki.guildwars2.com/wiki/User:MithranArkanere/Charset)
-        }
-
         private static bool IsBusy()
         {
             return !GameService.Gw2Mumble.IsAvailable 
@@ -109,6 +116,21 @@ namespace Blish_HUD.Extended
                    || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus
                    || !GameService.GameIntegration.Gw2Instance.IsInGame
                    || GameService.Gw2Mumble.UI.IsTextInputFocused;
+        }
+
+        private static bool IsTextValid(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                _logger.Debug($"Invalid chat message. Argument '{nameof(text)}' was null or empty.");
+                return false;
+            }
+            if (text.Length > 199)
+            {
+                _logger.Warn($"Invalid chat message. Argument '{nameof(text)}' exceeds limit of {MaxMessageLength} characters. Value: \"{text.Substring(0, 25)}[..+{MaxMessageLength-25}]\"");
+                return false;
+            }
+            return true;
         }
     }
 }
