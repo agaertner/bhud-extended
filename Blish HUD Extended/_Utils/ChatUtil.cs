@@ -1,9 +1,10 @@
-﻿using Blish_HUD.Input;
+﻿using System;
+using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
+using AsyncWindowsClipboard.Clipboard.Exceptions;
 namespace Blish_HUD.Extended
 {
     public static class ChatUtil
@@ -24,32 +25,39 @@ namespace Blish_HUD.Extended
         /// </summary>
         /// <param name="text">The text to send.</param>
         /// <param name="messageKey">The key which is used to open the message box.</param>
-        public static async Task Send(string text, KeyBinding messageKey)
+        public static void Send(string text, KeyBinding messageKey)
         {
             if (!IsTextValid(text) || !Focus(messageKey))
             {
                 return;
             }
+            try {
+                #pragma warning disable CS4014
+                byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
 
-            var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
-            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text))
-            {
-                await SetUnicodeBytesAsync(prevClipboardContent);
-                return;
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result) {
+                    
+                    SetUnicodeBytesAsync(prevClipboardContent);
+                    return;
+                }
+
+                Thread.Sleep(1);
+                KeyboardUtil.Press(162, true); // LControl
+                KeyboardUtil.Stroke(65, true); // A
+                Thread.Sleep(1);
+                KeyboardUtil.Release(162, true); // LControl
+                KeyboardUtil.Stroke(46, true);   // Del
+                KeyboardUtil.Press(162, true);   // LControl
+                KeyboardUtil.Stroke(86, true);   // V
+                Thread.Sleep(50);
+                KeyboardUtil.Release(162, true); // LControl
+                Thread.Sleep(1);
+                KeyboardUtil.Stroke(13); // Enter
+                SetUnicodeBytesAsync(prevClipboardContent);
+                #pragma warning restore CS4014
+            } catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException) {
+                _logger.Error(e, e.Message);
             }
-            Thread.Sleep(1);
-            KeyboardUtil.Press(162, true); // LControl
-            KeyboardUtil.Stroke(65, true); // A
-            Thread.Sleep(1);
-            KeyboardUtil.Release(162, true); // LControl
-            KeyboardUtil.Stroke(46, true); // Del
-            KeyboardUtil.Press(162, true); // LControl
-            KeyboardUtil.Stroke(86, true); // V
-            Thread.Sleep(50);
-            KeyboardUtil.Release(162, true); // LControl
-            Thread.Sleep(1);
-            KeyboardUtil.Stroke(13); // Enter
-            await SetUnicodeBytesAsync(prevClipboardContent);
         }
 
         /// <summary>
@@ -57,24 +65,30 @@ namespace Blish_HUD.Extended
         /// </summary>
         /// <param name="text">The text to insert.</param>
         /// <param name="messageKey">The key which is used to open the message box.</param>
-        public static async Task Insert(string text, KeyBinding messageKey)
+        public static void Insert(string text, KeyBinding messageKey)
         {
             if (!IsTextValid(text) || !Focus(messageKey))
             {
                 return;
             }
-            var prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
-            if (!await ClipboardUtil.WindowsClipboardService.SetTextAsync(text))
-            {
-                await SetUnicodeBytesAsync(prevClipboardContent);
-                return;
+            try {
+                #pragma warning disable CS4014
+                byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result)
+                {
+                    SetUnicodeBytesAsync(prevClipboardContent);
+                    return;
+                }
+                Thread.Sleep(1);
+                KeyboardUtil.Press(162, true); // LControl
+                KeyboardUtil.Stroke(86, true); // V
+                Thread.Sleep(1);
+                KeyboardUtil.Release(162, true); // LControl
+                SetUnicodeBytesAsync(prevClipboardContent);
+                #pragma warning restore CS4014
+            } catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException) {
+                _logger.Error(e, e.Message);
             }
-            Thread.Sleep(1);
-            KeyboardUtil.Press(162, true); // LControl
-            KeyboardUtil.Stroke(86, true); // V
-            Thread.Sleep(1);
-            KeyboardUtil.Release(162, true); // LControl
-            await SetUnicodeBytesAsync(prevClipboardContent);
         }
 
         private static bool Focus(KeyBinding messageKey)
