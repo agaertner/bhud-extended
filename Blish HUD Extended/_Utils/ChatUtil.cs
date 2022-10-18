@@ -150,7 +150,7 @@ namespace Blish_HUD.Extended
 
         public static bool IsLengthValid(string message)
         {
-            return message.Length <= MAX_MESSAGE_LENGTH;
+            return string.IsNullOrEmpty(message) || message.Length <= MAX_MESSAGE_LENGTH;
         }
     }
 }
