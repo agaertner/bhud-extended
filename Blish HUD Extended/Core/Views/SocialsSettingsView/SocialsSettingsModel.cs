@@ -93,12 +93,20 @@ namespace Blish_HUD.Extended.Core.Views
 
         internal string GetSocialUrl(SocialType social)
         {
-            return _socialUrls?.TryGetValue(social, out var val) ?? false ? val : string.Empty;
+            if (_socialUrls != null && _socialUrls.TryGetValue(social, out var val))
+            {
+                return val;
+            }
+            return string.Empty;
         }
 
         internal string GetSocialText(SocialType social)
         {
-            return _socialTexts?.TryGetValue(social, out var val) ?? false ? val : string.Empty;
+            if (_socialUrls != null && _socialTexts.TryGetValue(social, out var val))
+            {
+                return val;
+            }
+            return string.Empty;
         }
 
         internal IEnumerable<SocialType> GetSocials()

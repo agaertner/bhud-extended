@@ -291,6 +291,7 @@
     <Compile Include="_Extensions\MapExtensions.cs" />
     <Compile Include="_Extensions\MapTypeExtensions.cs" />
     <Compile Include="_Extensions\SpriteBatchExtensions.cs" />
+    <Compile Include="_Extensions\LocaleExtensions.cs" />
     <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\ChatUtil.cs" />
