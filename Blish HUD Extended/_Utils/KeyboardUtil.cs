@@ -14,6 +14,17 @@ namespace Blish_HUD.Extended {
         private const uint MAPVK_VSC_TO_VK_EX = 0x03;
         private const uint MAPVK_VK_TO_VSC_EX = 0x04;
 
+        private const uint KEY_PRESSED = 0x8000;
+
+        private const uint VK_LSHIFT = 0xA0;
+        private const uint VK_RSHIFT = 0xA1;
+
+        private const uint VK_LCONTROL = 0xA2;
+        private const uint VK_RCONTROL = 0xA3;
+
+        private const uint VK_CONTROL = 0x11;
+        private const uint VK_SHIFT = 0x10;
+
         [Flags]
         internal enum KeyEventF : uint {
             EXTENDEDKEY = 0x0001,
@@ -38,6 +49,9 @@ namespace Blish_HUD.Extended {
             0x26, 0x28, 0x25, 
             0x27, 0x90, 0x2A
         };
+
+        [DllImport("USER32.dll")]
+        private static extern short GetKeyState(uint vk);
 
         [DllImport("user32.dll")]
         private static extern uint MapVirtualKey(uint uCode, uint uMapType);
@@ -195,6 +209,69 @@ namespace Blish_HUD.Extended {
         public static void Stroke(int keyCode, bool sendToSystem = false) {
             Press(keyCode, sendToSystem);
             Release(keyCode, sendToSystem);
+        }
+
+        /// <summary>
+        /// Checks if the specified key is being pressed.
+        /// </summary>
+        /// <returns><see langword="True"/> if being pressed; otherwise <see langword="false"/>.</returns>
+        public static bool IsPressed(uint keyCode)
+        {
+            return Convert.ToBoolean(GetKeyState(keyCode) & KEY_PRESSED);
+        }
+
+        /// <summary>
+        /// Checks if the left Control key is being pressed.
+        /// </summary>
+        /// <returns><see langword="True"/> if LCtrl is being pressed; otherwise <see langword="false"/>.</returns>
+        public static bool IsLCtrlPressed()
+        {
+            return Convert.ToBoolean(GetKeyState(VK_LCONTROL) & KEY_PRESSED);
+        }
+
+        /// <summary>
+        /// Checks if the right Control key is being pressed.
+        /// </summary>
+        /// <returns><see langword="True"/> if RCtrl is being pressed; otherwise <see langword="false"/>.</returns>
+        public static bool IsRCtrlPressed()
+        {
+            return Convert.ToBoolean(GetKeyState(VK_RCONTROL) & KEY_PRESSED);
+        }
+
+        /// <summary>
+        /// Checks if the left Shift key is being pressed.
+        /// </summary>
+        /// <returns><see langword="True"/> if LShift is being pressed; otherwise <see langword="false"/>.</returns>
+        public static bool IsLShiftPressed()
+        {
+            return Convert.ToBoolean(GetKeyState(VK_LSHIFT) & KEY_PRESSED);
+        }
+
+        /// <summary>
+        /// Checks if the right Shift key is being pressed.
+        /// </summary>
+        /// <returns><see langword="True"/> if RShift is being pressed; otherwise <see langword="false"/>.</returns>
+        public static bool IsRShiftPressed()
+        {
+            return Convert.ToBoolean(GetKeyState(VK_RSHIFT) & KEY_PRESSED);
+        }
+
+        /// <summary>
+        /// Checks if any Control key (left or right) is being pressed.
+        /// </summary>
+        /// <returns><see langword="True"/> if ctrl is being pressed; otherwise <see langword="false"/>.</returns>
+        public static bool IsCtrlPressed()
+        {
+            return Convert.ToBoolean(GetKeyState(VK_CONTROL) & KEY_PRESSED);
+        }
+
+        /// <summary>
+        /// Checks if any Shift key (left or right) is being pressed.
+        /// </summary>
+        /// <returns><see langword="True"/> if shift is pressed; otherwise <see langword="false"/>.</returns>
+        public static bool IsShiftPressed()
+        {
+            return Convert.ToBoolean(GetKeyState(VK_SHIFT) & KEY_PRESSED);
         }
 
         private class ExtraKeyInfo {

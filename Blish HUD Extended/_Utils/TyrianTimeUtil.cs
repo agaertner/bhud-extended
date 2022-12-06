@@ -26,6 +26,7 @@ namespace Blish_HUD.Extended
         /// </summary>
         [EnumMember(Value = "night")] Night
     }
+
     public static class TyrianTimeExtension
     {
         /// <summary>
