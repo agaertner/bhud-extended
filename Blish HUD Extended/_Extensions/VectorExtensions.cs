@@ -38,14 +38,14 @@ namespace Blish_HUD.Extended
             return new Vector2((v.X / v.Z + 1f) / 2f * (float)GameService.Graphics.SpriteScreen.Width, (1f - v.Y / v.Z) / 2f * (float)GameService.Graphics.SpriteScreen.Height);
         }
 
-        public static Vector2 ToXnaVector2(this Coordinates2 coords)
+        public static Vector2 ToXna(this Coordinates2 coords)
         {
             return new Vector2((float)coords.X, (float)coords.Y);
         }
 
-        public static Vector2 ToVector2(this Vector3 vector)
+        public static Vector2 ToXna(this System.Numerics.Vector2 coords)
         {
-            return new Vector2(vector.X, vector.Y);
+            return new Vector2((float)coords.X, (float)coords.Y);
         }
 
         public static float Distance(this Vector3 v1, Vector3 v2)
