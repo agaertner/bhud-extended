@@ -298,6 +298,7 @@
     <Compile Include="_Utils\ChatUtil.cs" />
     <Compile Include="_Utils\KeyboardUtil.cs" />
     <Compile Include="_Utils\MouseUtil.cs" />
+    <Compile Include="_Utils\PositionUtil.cs" />
     <Compile Include="_Utils\TaskUtil.cs" />
     <Compile Include="_Utils\TyrianTimeUtil.cs" />
     <Compile Include="_Utils\WinApi\Input.cs" />
