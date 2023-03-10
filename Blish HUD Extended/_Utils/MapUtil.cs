@@ -1,4 +1,4 @@
-﻿namespace Blish_HUD.Extended._Utils
+﻿namespace Blish_HUD.Extended
 {
     public class MapUtil
     {
