@@ -12,9 +12,9 @@ namespace Blish_HUD.Extended
         /// The first 8 characters of the SHA1 hash of the following string<br/>
         /// <c>SHA1(&lt;continent_id&gt;&lt;continent_rect[0][0]&gt;&lt;continent_rect[0][1]&gt;&lt;continent_rect[1][0]&gt;&lt;continent_rect[1][1]&gt;)</c>
         /// </returns>
-        public static string GetHash(this Map map)
+        public static string GetSHA1(int continentId, Rectangle continentRect)
         {
-            var rpcHash = $"{map.ContinentId}{map.ContinentRect.TopLeft.X}{map.ContinentRect.TopLeft.Y}{map.ContinentRect.BottomRight.X}{map.ContinentRect.BottomRight.Y}";
+            var rpcHash = $"{continentId}{continentRect.TopLeft.X}{continentRect.TopLeft.Y}{continentRect.BottomRight.X}{continentRect.BottomRight.Y}";
             return rpcHash.ToSHA1Hash().Substring(0, 8);
         }
     }
