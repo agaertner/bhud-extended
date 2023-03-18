@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace Blish_HUD.Extended.Core.Views
@@ -14,22 +13,15 @@ namespace Blish_HUD.Extended.Core.Views
     {
         public enum SocialType
         {
-            [EnumMember(Value = "kofi")]
-            KoFi,
-            [EnumMember(Value = "discord")]
-            Discord,
-            [EnumMember(Value = "github")]
-            GitHub,
-            [EnumMember(Value = "instagram")]
-            Instagram,
-            [EnumMember(Value = "patreon")]
-            Patreon,
-            [EnumMember(Value = "twitch")]
-            Twitch,
-            [EnumMember(Value = "twitter")]
-            Twitter,
-            [EnumMember(Value = "youtube")]
-            YouTube
+
+            KOFI,
+            DISCORD,
+            GITHUB,
+            INSTAGRAM,
+            PATREON,
+            TWITCH,
+            TWITTER,
+            YOUTUBE
         }
 
         internal string SocialManifestUrl { get; }
