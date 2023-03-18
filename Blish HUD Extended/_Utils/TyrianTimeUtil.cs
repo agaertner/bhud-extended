@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace Blish_HUD.Extended
 {
@@ -8,23 +7,23 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Escape
         /// </summary>
-        [EnumMember(Value = "none")] None,
+        NONE,
         /// <summary>
         /// 5 minutes 05:00–06:00
         /// </summary>
-        [EnumMember(Value = "dawn")] Dawn,
+        DAWN,
         /// <summary>
         /// 70 minutes 06:00–20:00
         /// </summary>
-        [EnumMember(Value = "day")] Day,
+        DAY,
         /// <summary>
         /// 5 minutes 20:00–21:00
         /// </summary>
-        [EnumMember(Value = "dusk")] Dusk,
+        DUSK,
         /// <summary>
         /// 40 minutes 21:00–05:00
         /// </summary>
-        [EnumMember(Value = "night")] Night
+        NIGHT
     }
 
     public static class TyrianTimeExtension
@@ -43,14 +42,14 @@ namespace Blish_HUD.Extended
         /// </remarks>
         public static TyrianTime Resolve(this TyrianTime time) {
             switch (time) {
-                case TyrianTime.Day:
-                case TyrianTime.Dusk:
-                    return TyrianTime.Day;
-                case TyrianTime.Night:
-                case TyrianTime.Dawn:
-                    return TyrianTime.Night;
+                case TyrianTime.DAY:
+                case TyrianTime.DUSK:
+                    return TyrianTime.DAY;
+                case TyrianTime.NIGHT:
+                case TyrianTime.DAWN:
+                    return TyrianTime.NIGHT;
                 default:
-                    return TyrianTime.None;
+                    return TyrianTime.NONE;
             }
         }
 
@@ -68,17 +67,17 @@ namespace Blish_HUD.Extended
     public static class TyrianTimeUtil
     {
         private static IReadOnlyDictionary<TyrianTime, (TimeSpan,TimeSpan)> _dayCycleIntervals = new Dictionary<TyrianTime, (TimeSpan, TimeSpan)> {
-            { TyrianTime.Dawn, (new TimeSpan(5,0,0), new TimeSpan(6,0,0)) },
-            { TyrianTime.Day, (new TimeSpan(6,0,0), new TimeSpan(20,0,0)) },
-            { TyrianTime.Dusk, (new TimeSpan(20,0,0), new TimeSpan(21,0,0)) },
-            { TyrianTime.Night, (new TimeSpan(21,0,0), new TimeSpan(05,0,0)) }
+            { TyrianTime.DAWN, (new TimeSpan(5,0,0), new TimeSpan(6,0,0)) },
+            { TyrianTime.DAY, (new TimeSpan(6,0,0), new TimeSpan(20,0,0)) },
+            { TyrianTime.DUSK, (new TimeSpan(20,0,0), new TimeSpan(21,0,0)) },
+            { TyrianTime.NIGHT, (new TimeSpan(21,0,0), new TimeSpan(05,0,0)) }
         };
 
         private static IReadOnlyDictionary<TyrianTime, (TimeSpan, TimeSpan)> _canthanDayCycleIntervals = new Dictionary<TyrianTime, (TimeSpan, TimeSpan)> {
-            { TyrianTime.Dawn, (new TimeSpan(7,0,0), new TimeSpan(8,0,0)) },
-            { TyrianTime.Day, (new TimeSpan(8,0,0), new TimeSpan(19,0,0)) },
-            { TyrianTime.Dusk, (new TimeSpan(19,0,0), new TimeSpan(20,0,0)) },
-            { TyrianTime.Night, (new TimeSpan(20,0,0), new TimeSpan(7,0,0)) }
+            { TyrianTime.DAWN, (new TimeSpan(7,0,0), new TimeSpan(8,0,0)) },
+            { TyrianTime.DAY, (new TimeSpan(8,0,0), new TimeSpan(19,0,0)) },
+            { TyrianTime.DUSK, (new TimeSpan(19,0,0), new TimeSpan(20,0,0)) },
+            { TyrianTime.NIGHT, (new TimeSpan(20,0,0), new TimeSpan(7,0,0)) }
         };
 
         /// <summary>
@@ -123,7 +122,7 @@ namespace Blish_HUD.Extended
                 if (!TimeBetween(tyrianTime, value.Item1, value.Item2)) continue;
                 return key;
             }
-            return TyrianTime.None;
+            return TyrianTime.NONE;
         }
 
         /// <summary>
