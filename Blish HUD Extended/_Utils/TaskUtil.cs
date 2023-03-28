@@ -1,4 +1,5 @@
 ﻿using Flurl.Http;
+using Gw2Sharp.WebApi.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Net;
@@ -79,6 +80,45 @@ namespace Blish_HUD.Extended
             }
 
             return (false, default);
+        }
+
+        public async Task<T> RetryAsync<T>(Func<T> func, int retries = 2, int delayMs = 30000)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception e)
+            {
+                // Do not retry if requested resource does not exist or access is denied.
+                if (e is NotFoundException or BadRequestException or AuthorizationRequiredException)
+                {
+                    Logger.Debug(e, e.Message);
+                    return default;
+                }
+
+                if (retries > 0)
+                {
+                    Logger.Warn(e, $"Failed to pull data from the GW2 API. Retrying in 30 seconds (remaining retries: {retries}).");
+                    await Task.Delay(delayMs);
+                    return await RetryAsync(func, retries - 1);
+                }
+
+                switch (e)
+                {
+                    case TooManyRequestsException:
+                        Logger.Warn(e, "After multiple attempts no data could be loaded due to being rate limited by the API.");
+                        break;
+                    case RequestException or RequestException<string>:
+                        Logger.Debug(e, e.Message);
+                        break;
+                    default:
+                        Logger.Error(e, e.Message);
+                        break;
+                }
+
+                return default;
+            }
         }
     }
 }
