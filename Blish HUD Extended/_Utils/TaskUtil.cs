@@ -82,6 +82,14 @@ namespace Blish_HUD.Extended
             return (false, default);
         }
 
+        /// <summary>
+        /// Retries the given awaitable <see cref="Task{T}"/> function after a set delay (default: 30s).
+        /// </summary>
+        /// <typeparam name="T">Some type returned by the <see cref="Task"/> function.</typeparam>
+        /// <param name="func">The awaitable function to retry.</param>
+        /// <param name="retries">Amount of retries before an exception is logged.</param>
+        /// <param name="delayMs">A delay in milliseconds to wait before trying again.</param>
+        /// <returns><see cref="Task{T}"/> if successful; otherwise <see cref="Task"/>&lt;<see langword="default"/>&gt;.</returns>
         public static async Task<T> RetryAsync<T>(Func<Task<T>> func, int retries = 2, int delayMs = 30000)
         {
             try
@@ -99,7 +107,7 @@ namespace Blish_HUD.Extended
 
                 if (retries > 0)
                 {
-                    Logger.Warn(e, $"Failed to pull data from the GW2 API. Retrying in 30 seconds (remaining retries: {retries}).");
+                    Logger.Warn(e, $"Failed to pull data from the GW2 API. Retrying in {delayMs / 1000} second(s) (remaining retries: {retries}).");
                     await Task.Delay(delayMs);
                     return await RetryAsync(func, retries - 1);
                 }
