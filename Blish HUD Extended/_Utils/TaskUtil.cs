@@ -82,11 +82,11 @@ namespace Blish_HUD.Extended
             return (false, default);
         }
 
-        public static async Task<T> RetryAsync<T>(Func<T> func, int retries = 2, int delayMs = 30000)
+        public static async Task<T> RetryAsync<T>(Func<Task<T>> func, int retries = 2, int delayMs = 30000)
         {
             try
             {
-                return func();
+                return await func();
             }
             catch (Exception e)
             {
