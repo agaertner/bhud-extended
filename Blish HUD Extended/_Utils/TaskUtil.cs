@@ -109,7 +109,7 @@ namespace Blish_HUD.Extended
                 {
                     Logger.Warn(e, $"Failed to pull data from the GW2 API. Retrying in {delayMs / 1000} second(s) (remaining retries: {retries}).");
                     await Task.Delay(delayMs);
-                    return await RetryAsync(func, retries - 1);
+                    return await RetryAsync(func, retries - 1, delayMs);
                 }
 
                 switch (e)
