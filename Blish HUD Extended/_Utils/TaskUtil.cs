@@ -83,7 +83,7 @@ namespace Blish_HUD.Extended
         }
 
         /// <summary>
-        /// Retries the given awaitable <see cref="Task{T}"/> function after a set delay (default: 30s).
+        /// Retries the given awaitable <see cref="Task{T}"/> function a given amount of times each after a set delay (default: 30s).
         /// </summary>
         /// <typeparam name="T">Some type returned by the <see cref="Task"/> function.</typeparam>
         /// <param name="func">The awaitable function to retry.</param>
@@ -101,7 +101,7 @@ namespace Blish_HUD.Extended
                 // Do not retry if requested resource does not exist or access is denied.
                 if (e is NotFoundException or BadRequestException or AuthorizationRequiredException)
                 {
-                    Logger.Debug(e, e.Message);
+                    Logger.Trace(e, e.Message);
                     return default;
                 }
 
@@ -118,13 +118,46 @@ namespace Blish_HUD.Extended
                         Logger.Warn(e, "After multiple attempts no data could be loaded due to being rate limited by the API.");
                         break;
                     case RequestException or RequestException<string>:
-                        Logger.Debug(e, e.Message);
+                        Logger.Trace(e, e.Message);
                         break;
                     default:
                         Logger.Error(e, e.Message);
                         break;
                 }
 
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Tries the given awaitable <see cref="Task{T}"/> function, catching exceptions.
+        /// </summary>
+        /// <typeparam name="T">Some type returned by the <see cref="Task"/> function.</typeparam>
+        /// <param name="func">The awaitable function to try.</param>
+        /// <returns><see cref="Task{T}"/> if successful; otherwise <see cref="Task"/>&lt;<see langword="default"/>&gt;.</returns>
+        public static async Task<T> TryAsync<T>(Func<Task<T>> func)
+        {
+            try
+            {
+                return await func();
+            }
+            catch (Exception e)
+            {
+                switch (e)
+                {
+                    case NotFoundException or BadRequestException or AuthorizationRequiredException: // Resource does not exist or access is denied.
+                        Logger.Trace(e, e.Message);
+                        break;
+                    case TooManyRequestsException:
+                        Logger.Warn(e, "No data could be loaded due to being rate limited by the API.");
+                        break;
+                    case RequestException or RequestException<string>:
+                        Logger.Trace(e, e.Message);
+                        break;
+                    default:
+                        Logger.Error(e, e.Message);
+                        break;
+                }
                 return default;
             }
         }
