@@ -56,7 +56,7 @@ namespace Blish_HUD.Extended
                 SetUnicodeBytesAsync(prevClipboardContent);
                 #pragma warning restore CS4014
             } catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException) {
-                _logger.Error(e, e.Message);
+                _logger.Info(e, e.Message);
             }
         }
 
@@ -87,7 +87,7 @@ namespace Blish_HUD.Extended
                 SetUnicodeBytesAsync(prevClipboardContent);
                 #pragma warning restore CS4014
             } catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException) {
-                _logger.Error(e, e.Message);
+                _logger.Info(e, e.Message);
             }
         }
 
@@ -137,12 +137,12 @@ namespace Blish_HUD.Extended
         {
             if (string.IsNullOrEmpty(text))
             {
-                _logger.Debug($"Invalid chat message. Argument '{nameof(text)}' was null or empty.");
+                _logger.Info($"Invalid chat message. Argument '{nameof(text)}' was null or empty.");
                 return false;
             }
             if (text.Length > MAX_MESSAGE_LENGTH)
             {
-                _logger.Warn($"Invalid chat message. Argument '{nameof(text)}' exceeds limit of {MAX_MESSAGE_LENGTH} characters. Value: \"{text.Substring(0, 25)}[..+{MAX_MESSAGE_LENGTH-25}]\"");
+                _logger.Info($"Invalid chat message. Argument '{nameof(text)}' exceeds limit of {MAX_MESSAGE_LENGTH} characters. Value: \"{text.Substring(0, 25)}[..+{MAX_MESSAGE_LENGTH-25}]\"");
                 return false;
             }
             return true;
