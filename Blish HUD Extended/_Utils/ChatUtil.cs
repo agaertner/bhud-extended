@@ -120,8 +120,18 @@ namespace Blish_HUD.Extended
 
         private static async Task SetUnicodeBytesAsync(byte[] clipboardContent)
         {
-            if (clipboardContent == null) return;
-            await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
+            if (clipboardContent == null)
+            {
+                return;
+            }
+            try
+            {
+                await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
+            }
+            catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException)
+            {
+                _logger.Info(e, e.Message);
+            }
         }
 
         private static bool IsBusy()
