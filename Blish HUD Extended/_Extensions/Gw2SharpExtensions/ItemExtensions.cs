@@ -22,7 +22,7 @@ namespace Blish_HUD.Extended
                 ItemRarity.Rare => new Color(252, 208, 11),
                 ItemRarity.Exotic => new Color(255, 164, 5),
                 ItemRarity.Ascended => new Color(251, 62, 141),
-                ItemRarity.Legendary => new Color(106, 49, 187),
+                ItemRarity.Legendary => new Color(136, 79, 217),
                 _ => Color.White
             };
         }
