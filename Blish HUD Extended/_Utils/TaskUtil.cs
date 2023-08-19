@@ -34,7 +34,7 @@ namespace Blish_HUD.Extended
 
                 if (retries > 0)
                 {
-                    logger.Warn(e, $"Failed to pull data from the GW2 API. Retrying in {delayMs / 1000} second(s) (remaining retries: {retries}).");
+                    logger.Warn(e, $"Failed to request data. Retrying in {delayMs / 1000} second(s) (remaining retries: {retries}).");
                     await Task.Delay(delayMs);
                     return await RetryAsync(func, retries - 1, delayMs, logger);
                 }
@@ -56,7 +56,7 @@ namespace Blish_HUD.Extended
             }
         }
 
-        /// <summary>
+        /// <summary>s
         /// Tries the given awaitable <see cref="Task{T}"/> function, catching exceptions.
         /// </summary>
         /// <typeparam name="T">Some type returned by the <see cref="Task"/> function.</typeparam>
@@ -65,31 +65,7 @@ namespace Blish_HUD.Extended
         /// <returns><see cref="Task{T}"/> if successful; otherwise <see cref="Task"/>&lt;<see langword="default"/>&gt;.</returns>
         public static async Task<T> TryAsync<T>(Func<Task<T>> func, Logger logger = null)
         {
-            logger ??= Logger.GetLogger<TaskUtil>();
-
-            try
-            {
-                return await func();
-            }
-            catch (Exception e)
-            {
-                switch (e)
-                {
-                    case NotFoundException or BadRequestException or AuthorizationRequiredException: // Resource does not exist or access is denied.
-                        logger.Trace(e, e.Message);
-                        break;
-                    case TooManyRequestsException:
-                        logger.Warn(e, "No data could be loaded due to being rate limited by the API.");
-                        break;
-                    case RequestException or RequestException<string>:
-                        logger.Trace(e, e.Message);
-                        break;
-                    default:
-                        logger.Error(e, e.Message);
-                        break;
-                }
-                return default;
-            }
+            return await RetryAsync(func, 0, 0, logger);
         }
     }
 }
