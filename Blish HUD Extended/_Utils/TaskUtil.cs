@@ -1,6 +1,7 @@
 ﻿using Gw2Sharp.WebApi.Exceptions;
 using System;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Blish_HUD.Extended
 {
@@ -45,6 +46,12 @@ namespace Blish_HUD.Extended
                         logger.Warn(e, "After multiple attempts no data could be loaded due to being rate limited by the API.");
                         break;
                     case RequestException or RequestException<string>:
+                        logger.Trace(e, e.Message);
+                        break;
+                    case JsonReaderException:
+                        logger.Trace(e, e.Message);
+                        break;
+                    case JsonException:
                         logger.Trace(e, e.Message);
                         break;
                     default:
