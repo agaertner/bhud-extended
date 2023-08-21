@@ -26,7 +26,7 @@ namespace Blish_HUD.Extended
             catch (Exception e)
             {
                 // Do not retry if requested resource does not exist or access is denied.
-                if (e is NotFoundException or BadRequestException or AuthorizationRequiredException)
+                if (e is NotFoundException or BadRequestException or AuthorizationRequiredException or ServiceUnavailableException)
                 {
                     logger.Trace(e, e.Message);
                     return default;
@@ -34,7 +34,7 @@ namespace Blish_HUD.Extended
 
                 if (retries > 0)
                 {
-                    logger.Warn(e, $"Failed to request data. Retrying in {delayMs / 1000} second(s) (remaining retries: {retries}).");
+                    logger.Info(e, $"Failed to request data. Retrying in {delayMs / 1000} second(s) (remaining retries: {retries}).");
                     await Task.Delay(delayMs);
                     return await RetryAsync(func, retries - 1, delayMs, logger);
                 }
