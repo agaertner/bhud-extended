@@ -32,7 +32,7 @@ namespace Blish_HUD.Extended
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(outFilePath)!);
+                Directory.CreateDirectory(outFilePath);
 
                 using var stream = contentsManager.GetFileStream(refFilePath);
                 if (stream == null)
@@ -44,9 +44,9 @@ namespace Blish_HUD.Extended
                 file.Position = 0;
                 await stream.CopyToAsync(file);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                Logger.Warn(e, e.Message);
+                Logger.Info(e, e.Message);
             }
         }
     }
