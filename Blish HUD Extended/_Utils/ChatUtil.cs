@@ -27,12 +27,10 @@ namespace Blish_HUD.Extended
         /// <param name="messageKey">The key which is used to open the message box.</param>
         public static void Send(string text, KeyBinding messageKey)
         {
-            if (!IsTextValid(text) || !Focus(messageKey))
-            {
+            if (!IsTextValid(text) || !Focus(messageKey)) {
                 return;
             }
             try {
-                #pragma warning disable CS4014
                 byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
 
                 if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result) {
@@ -54,8 +52,59 @@ namespace Blish_HUD.Extended
                 Thread.Sleep(1);
                 KeyboardUtil.Stroke(13); // Enter
                 SetUnicodeBytesAsync(prevClipboardContent);
-                #pragma warning restore CS4014
-            } catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException) {
+            } catch (Exception e) {
+                _logger.Info(e, e.Message);
+            }
+        }
+
+        public static void SendWhisper(string recipient, string text, KeyBinding messageKey) {
+            if (!IsTextValid(text) || !Focus(messageKey))
+            {
+                return;
+            }
+            try
+            {
+
+                byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
+
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient).Result)
+                {
+                    SetUnicodeBytesAsync(prevClipboardContent);
+                    return;
+                }
+
+                // Paste recipient
+                Thread.Sleep(1);
+                KeyboardUtil.Press(162, true);   // LControl
+                KeyboardUtil.Stroke(86, true);   // V
+                Thread.Sleep(50);
+                KeyboardUtil.Release(162, true); // LControl
+                Thread.Sleep(1);
+
+                // Switch to text message field
+                KeyboardUtil.Stroke(9); // Tab
+
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result)
+                {
+                    SetUnicodeBytesAsync(prevClipboardContent);
+                    return;
+                }
+
+                Thread.Sleep(1);
+                KeyboardUtil.Press(162, true);   // LControl
+                KeyboardUtil.Stroke(86, true);   // V
+                Thread.Sleep(50);
+                KeyboardUtil.Release(162, true); // LControl
+                Thread.Sleep(1);
+
+                // Send message
+                KeyboardUtil.Stroke(13); // Enter
+
+                // Restore clipboard
+                SetUnicodeBytesAsync(prevClipboardContent);
+            }
+            catch (Exception e)
+            {
                 _logger.Info(e, e.Message);
             }
         }
@@ -72,7 +121,6 @@ namespace Blish_HUD.Extended
                 return;
             }
             try {
-                #pragma warning disable CS4014
                 byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
                 if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result)
                 {
@@ -85,8 +133,7 @@ namespace Blish_HUD.Extended
                 Thread.Sleep(1);
                 KeyboardUtil.Release(162, true); // LControl
                 SetUnicodeBytesAsync(prevClipboardContent);
-                #pragma warning restore CS4014
-            } catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException) {
+            } catch (Exception e) {
                 _logger.Info(e, e.Message);
             }
         }
@@ -120,16 +167,12 @@ namespace Blish_HUD.Extended
 
         private static async Task SetUnicodeBytesAsync(byte[] clipboardContent)
         {
-            if (clipboardContent == null)
-            {
+            if (clipboardContent == null) {
                 return;
             }
-            try
-            {
+            try {
                 await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
-            }
-            catch (Exception e) when (e is ClipboardWindowsApiException or ClipboardTimeoutException)
-            {
+            } catch (Exception e) {
                 _logger.Info(e, e.Message);
             }
         }
