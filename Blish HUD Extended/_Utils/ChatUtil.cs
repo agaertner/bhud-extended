@@ -1,10 +1,9 @@
-﻿using System;
-using Blish_HUD.Input;
+﻿using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AsyncWindowsClipboard.Clipboard.Exceptions;
 namespace Blish_HUD.Extended
 {
     public static class ChatUtil
@@ -57,15 +56,29 @@ namespace Blish_HUD.Extended
             }
         }
 
-        public static void SendWhisper(string recipient, string text, KeyBinding messageKey) {
-            if (!IsTextValid(text) || !Focus(messageKey))
+        public static void SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey) {
+            if (!IsTextValid(cmdAndMessage) || !Focus(messageKey))
             {
                 return;
             }
             try
             {
-
                 byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
+
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(cmdAndMessage).Result)
+                {
+                    SetUnicodeBytesAsync(prevClipboardContent);
+                    return;
+                }
+
+                Thread.Sleep(1);
+                KeyboardUtil.Press(162, true);   // LControl
+                KeyboardUtil.Stroke(86, true);   // V
+                Thread.Sleep(50);
+                KeyboardUtil.Release(162, true); // LControl
+                Thread.Sleep(1);
+
+                // We are now in the recipient field
 
                 if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient).Result)
                 {
@@ -81,21 +94,8 @@ namespace Blish_HUD.Extended
                 KeyboardUtil.Release(162, true); // LControl
                 Thread.Sleep(1);
 
-                // Switch to text message field
+                // Switch to text message field to be able to send the message
                 KeyboardUtil.Stroke(9); // Tab
-
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result)
-                {
-                    SetUnicodeBytesAsync(prevClipboardContent);
-                    return;
-                }
-
-                Thread.Sleep(1);
-                KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(50);
-                KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(1);
 
                 // Send message
                 KeyboardUtil.Stroke(13); // Enter
