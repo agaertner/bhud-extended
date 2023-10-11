@@ -76,7 +76,7 @@ namespace Blish_HUD.Extended
                 KeyboardUtil.Stroke(86, true);   // V
                 Thread.Sleep(50);
                 KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(1);
+                Thread.Sleep(10);
 
                 // We are now in the recipient field
 
@@ -87,15 +87,17 @@ namespace Blish_HUD.Extended
                 }
 
                 // Paste recipient
-                Thread.Sleep(1);
+                Thread.Sleep(10);
                 KeyboardUtil.Press(162, true);   // LControl
                 KeyboardUtil.Stroke(86, true);   // V
                 Thread.Sleep(50);
                 KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(1);
 
+                Thread.Sleep(50);
                 // Switch to text message field to be able to send the message
                 KeyboardUtil.Stroke(9); // Tab
+
+                Thread.Sleep(10);
 
                 // Send message
                 KeyboardUtil.Stroke(13); // Enter
