@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Blish_HUD.Extended.WinApi;
 
 namespace Blish_HUD.Extended {
@@ -208,6 +209,7 @@ namespace Blish_HUD.Extended {
         /// <param name="sendToSystem">Set if key message (or a combination of such) cannot be correctly interpreted by the game client.</param>
         public static void Stroke(int keyCode, bool sendToSystem = false) {
             Press(keyCode, sendToSystem);
+            Thread.Sleep(1);
             Release(keyCode, sendToSystem);
         }
 
