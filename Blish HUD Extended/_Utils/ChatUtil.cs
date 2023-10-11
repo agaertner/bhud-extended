@@ -2,8 +2,11 @@
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Blish_HUD.Controls.Extern;
+
 namespace Blish_HUD.Extended
 {
     public static class ChatUtil
@@ -40,13 +43,17 @@ namespace Blish_HUD.Extended
 
                 Thread.Sleep(1);
                 KeyboardUtil.Press(162, true); // LControl
+                Thread.Sleep(10);
                 KeyboardUtil.Stroke(65, true); // A
                 Thread.Sleep(1);
                 KeyboardUtil.Release(162, true); // LControl
+                Thread.Sleep(1);
                 KeyboardUtil.Stroke(46, true);   // Del
+                Thread.Sleep(1);
                 KeyboardUtil.Press(162, true);   // LControl
+                Thread.Sleep(10);
                 KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(50);
+                Thread.Sleep(5);
                 KeyboardUtil.Release(162, true); // LControl
                 Thread.Sleep(1);
                 KeyboardUtil.Stroke(13); // Enter
@@ -57,8 +64,7 @@ namespace Blish_HUD.Extended
         }
 
         public static void SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey) {
-            if (!IsTextValid(cmdAndMessage) || !Focus(messageKey))
-            {
+            if (!IsTextValid(cmdAndMessage) || !Focus(messageKey)) {
                 return;
             }
             try
@@ -73,31 +79,33 @@ namespace Blish_HUD.Extended
 
                 Thread.Sleep(1);
                 KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(50);
-                KeyboardUtil.Release(162, true); // LControl
                 Thread.Sleep(10);
+                KeyboardUtil.Stroke(86, true);   // V
+                Thread.Sleep(5);
+                KeyboardUtil.Release(162, true); // LControl
+                Thread.Sleep(1);
 
                 // We are now in the recipient field
-
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient).Result)
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient.Trim()).Result)
                 {
                     SetUnicodeBytesAsync(prevClipboardContent);
                     return;
                 }
 
                 // Paste recipient
-                Thread.Sleep(10);
+                Thread.Sleep(1);
                 KeyboardUtil.Press(162, true);   // LControl
+                Thread.Sleep(10);
                 KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(50);
+                Thread.Sleep(5);
                 KeyboardUtil.Release(162, true); // LControl
 
-                Thread.Sleep(50);
+                Thread.Sleep(1);
+
                 // Switch to text message field to be able to send the message
                 KeyboardUtil.Stroke(9); // Tab
 
-                Thread.Sleep(10);
+                Thread.Sleep(1);
 
                 // Send message
                 KeyboardUtil.Stroke(13); // Enter
@@ -144,7 +152,7 @@ namespace Blish_HUD.Extended
         {
             if (IsBusy() || messageKey == null || messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None)
             {
-                return false;
+                return GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused;
             }
 
             // Tell the game to release the shift keys so chat can be opened.
@@ -162,8 +170,10 @@ namespace Blish_HUD.Extended
             }
             if (hasModifierKey)
             {
+                Thread.Sleep(1);
                 KeyboardUtil.Release(modifierKey, true);
             }
+            Thread.Sleep(5);
             return true;
         }
 
