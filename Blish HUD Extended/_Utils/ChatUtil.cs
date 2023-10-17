@@ -2,10 +2,8 @@ using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Blish_HUD.Controls.Extern;
 
 namespace Blish_HUD.Extended
 {
@@ -152,7 +150,7 @@ namespace Blish_HUD.Extended
         {
             if (messageKey == null || (messageKey.PrimaryKey == Keys.None && 
                                        messageKey.ModifierKeys == ModifierKeys.None)) {
-                return false;
+                return GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused;
             }
 
             while (!IsBusy())
