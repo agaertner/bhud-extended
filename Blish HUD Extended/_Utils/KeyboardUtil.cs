@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Blish_HUD.Extended.WinApi;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Blish_HUD.Extended.WinApi;
 
 namespace Blish_HUD.Extended {
     public static class KeyboardUtil {
@@ -128,6 +128,7 @@ namespace Blish_HUD.Extended {
                     lParam.extendedKey = 1;
                 PostMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYDOWN, vkCode, lParam.GetInt());
             }
+            Thread.Sleep(1); // Just to give time to process the press.
         }
 
         /// <summary>

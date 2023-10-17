@@ -2,17 +2,15 @@ using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
-namespace Blish_HUD.Extended
-{
+namespace Blish_HUD.Extended {
     public static class ChatUtil
     {
         public const int MAX_MESSAGE_LENGTH = 199;
 
         private static Logger _logger = Logger.GetLogger(typeof(ChatUtil));
         
-        private static readonly IReadOnlyDictionary<ModifierKeys, int> ModifierLookUp = new Dictionary<ModifierKeys, int>
+        private static readonly IReadOnlyDictionary<ModifierKeys, int> _modifierLookUp = new Dictionary<ModifierKeys, int>
         {
             {ModifierKeys.Alt, 18},
             {ModifierKeys.Ctrl, 17},
@@ -38,22 +36,14 @@ namespace Blish_HUD.Extended
                     return;
                 }
 
-                Thread.Sleep(10);
-                KeyboardUtil.Press(162, true); // LControl
-                Thread.Sleep(10);
-                KeyboardUtil.Stroke(65, true); // A
-                Thread.Sleep(10);
-                KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(10);
-                KeyboardUtil.Stroke(46, true);   // Del
-                Thread.Sleep(10);
                 KeyboardUtil.Press(162, true);   // LControl
-                Thread.Sleep(50);
-                KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(50);
+                KeyboardUtil.Stroke(65, true);   // A
                 KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(10);
-                KeyboardUtil.Stroke(13); // Enter
+                KeyboardUtil.Stroke(46, true);   // Del
+                KeyboardUtil.Press(162, true);   // LControl
+                KeyboardUtil.Stroke(86, true);   // V
+                KeyboardUtil.Release(162, true); // LControl
+                KeyboardUtil.Stroke(13);         // Enter
                 SetUnicodeBytesAsync(prevClipboardContent);
             } catch (Exception e) {
                 _logger.Debug(e, e.Message);
@@ -74,13 +64,9 @@ namespace Blish_HUD.Extended
                     return;
                 }
 
-                Thread.Sleep(10);
                 KeyboardUtil.Press(162, true);   // LControl
-                Thread.Sleep(50);
                 KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(50);
                 KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(10);
 
                 // We are now in the recipient field
                 if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient.Trim()).Result)
@@ -91,19 +77,12 @@ namespace Blish_HUD.Extended
                 }
 
                 // Paste recipient
-                Thread.Sleep(10);
                 KeyboardUtil.Press(162, true);   // LControl
-                Thread.Sleep(10);
                 KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(50);
                 KeyboardUtil.Release(162, true); // LControl
-
-                Thread.Sleep(10);
 
                 // Switch to text message field to be able to send the message
                 KeyboardUtil.Stroke(9); // Tab
-
-                Thread.Sleep(10);
 
                 // Send message
                 KeyboardUtil.Stroke(13); // Enter
@@ -135,10 +114,8 @@ namespace Blish_HUD.Extended
                     return;
                 }
 
-                Thread.Sleep(1);
-                KeyboardUtil.Press(162, true); // LControl
-                KeyboardUtil.Stroke(86, true); // V
-                Thread.Sleep(1);
+                KeyboardUtil.Press(162, true);   // LControl
+                KeyboardUtil.Stroke(86, true);   // V
                 KeyboardUtil.Release(162, true); // LControl
                 SetUnicodeBytesAsync(prevClipboardContent);
             } catch (Exception e) {
@@ -148,30 +125,27 @@ namespace Blish_HUD.Extended
 
         private static bool Focus(KeyBinding messageKey)
         {
-            if (messageKey == null || (messageKey.PrimaryKey == Keys.None && 
-                                       messageKey.ModifierKeys == ModifierKeys.None)) {
+            if (messageKey == null || 
+                messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None) {
                 return GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused;
             }
 
             // Tell the game to release the shift keys so chat can be opened.
             KeyboardUtil.Release(160);
             KeyboardUtil.Release(161);
-            Thread.Sleep(5);
 
-            var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
+            var hasModifierKey = _modifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
             if (hasModifierKey)
             {
-                KeyboardUtil.Press(modifierKey);
-                Thread.Sleep(5);
+                KeyboardUtil.Press(modifierKey, true);
             }
             if (messageKey.PrimaryKey != Keys.None)
             {
-                KeyboardUtil.Stroke((int)messageKey.PrimaryKey);
+                KeyboardUtil.Stroke((int)messageKey.PrimaryKey, true);
             }
             if (hasModifierKey)
             {
-                Thread.Sleep(5);
-                KeyboardUtil.Release(modifierKey);
+                KeyboardUtil.Release(modifierKey, true);
             }
 
             var waitTil = DateTime.UtcNow.AddMilliseconds(500);
@@ -208,15 +182,6 @@ namespace Blish_HUD.Extended
             } catch (Exception e) {
                 _logger.Debug(e, e.Message);
             }
-        }
-
-        private static bool IsBusy()
-        {
-            return !GameService.Gw2Mumble.IsAvailable 
-                   || !GameService.GameIntegration.Gw2Instance.Gw2IsRunning
-                   || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus
-                   || !GameService.GameIntegration.Gw2Instance.IsInGame
-                   || GameService.Gw2Mumble.UI.IsTextInputFocused;
         }
 
         private static bool IsTextValid(string text)
