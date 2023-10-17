@@ -163,17 +163,17 @@ namespace Blish_HUD.Extended
                 var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
                 if (hasModifierKey)
                 {
-                    KeyboardUtil.Press(modifierKey, true);
+                    KeyboardUtil.Press(modifierKey);
                     Thread.Sleep(5);
                 }
                 if (messageKey.PrimaryKey != Keys.None)
                 {
-                    KeyboardUtil.Stroke((int)messageKey.PrimaryKey, true);
+                    KeyboardUtil.Stroke((int)messageKey.PrimaryKey);
                 }
                 if (hasModifierKey)
                 {
                     Thread.Sleep(5);
-                    KeyboardUtil.Release(modifierKey, true);
+                    KeyboardUtil.Release(modifierKey);
                 }
                 Thread.Sleep(100);
                 if (IsBusy()) {
