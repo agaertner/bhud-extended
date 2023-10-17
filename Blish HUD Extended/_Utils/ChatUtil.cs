@@ -142,27 +142,36 @@ namespace Blish_HUD.Extended
 
         private static bool Focus(KeyBinding messageKey)
         {
-            if (IsBusy() || messageKey == null || messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None)
-            {
+            if (messageKey == null || (messageKey.PrimaryKey == Keys.None && 
+                                       messageKey.ModifierKeys == ModifierKeys.None)) {
                 return false;
             }
 
-            // Tell the game to release the shift keys so chat can be opened.
-            KeyboardUtil.Release(160);
-            KeyboardUtil.Release(161);
+            while (!IsBusy())
+            {
+                Thread.Sleep(20);
 
-            var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
-            if (hasModifierKey)
-            {
-                KeyboardUtil.Press(modifierKey, true);
-            }
-            if (messageKey.PrimaryKey != Keys.None)
-            {
-                KeyboardUtil.Stroke((int)messageKey.PrimaryKey, true);
-            }
-            if (hasModifierKey)
-            {
-                KeyboardUtil.Release(modifierKey, true);
+                // Tell the game to release the shift keys so chat can be opened.
+                KeyboardUtil.Release(160);
+                KeyboardUtil.Release(161);
+                Thread.Sleep(5);
+
+                var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
+                if (hasModifierKey)
+                {
+                    KeyboardUtil.Press(modifierKey, true);
+                    Thread.Sleep(5);
+                }
+                if (messageKey.PrimaryKey != Keys.None)
+                {
+                    KeyboardUtil.Stroke((int)messageKey.PrimaryKey, true);
+                }
+                if (hasModifierKey)
+                {
+                    Thread.Sleep(5);
+                    KeyboardUtil.Release(modifierKey, true);
+                }
+                Thread.Sleep(5);
             }
             return true;
         }

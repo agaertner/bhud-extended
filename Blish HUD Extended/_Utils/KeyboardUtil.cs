@@ -209,7 +209,7 @@ namespace Blish_HUD.Extended {
         /// <param name="sendToSystem">Set if key message (or a combination of such) cannot be correctly interpreted by the game client.</param>
         public static void Stroke(int keyCode, bool sendToSystem = false) {
             Press(keyCode, sendToSystem);
-            Thread.Sleep(1);
+            Thread.Sleep(10);
             Release(keyCode, sendToSystem);
         }
 
