@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Blish_HUD.Extended
 {
@@ -27,15 +26,15 @@ namespace Blish_HUD.Extended
         /// <param name="messageKey">The key which is used to open the message box.</param>
         public static void Send(string text, KeyBinding messageKey)
         {
-            if (!IsTextValid(text) || !Focus(messageKey)) {
-                return;
-            }
             try {
                 byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
 
                 if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result) {
-                    
                     SetUnicodeBytesAsync(prevClipboardContent);
+                    return;
+                }
+
+                if (!IsTextValid(text) || !Focus(messageKey)) {
                     return;
                 }
 
@@ -57,21 +56,21 @@ namespace Blish_HUD.Extended
                 KeyboardUtil.Stroke(13); // Enter
                 SetUnicodeBytesAsync(prevClipboardContent);
             } catch (Exception e) {
-                _logger.Info(e, e.Message);
+                _logger.Debug(e, e.Message);
             }
         }
 
         public static void SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey) {
-            if (!IsTextValid(cmdAndMessage) || !Focus(messageKey)) {
-                return;
-            }
             try
             {
                 byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
 
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(cmdAndMessage).Result)
-                {
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(cmdAndMessage).Result) {
                     SetUnicodeBytesAsync(prevClipboardContent);
+                    return;
+                }
+
+                if (!IsTextValid(cmdAndMessage) || !Focus(messageKey)) {
                     return;
                 }
 
@@ -86,6 +85,7 @@ namespace Blish_HUD.Extended
                 // We are now in the recipient field
                 if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient.Trim()).Result)
                 {
+                    Unfocus();
                     SetUnicodeBytesAsync(prevClipboardContent);
                     return;
                 }
@@ -113,7 +113,7 @@ namespace Blish_HUD.Extended
             }
             catch (Exception e)
             {
-                _logger.Info(e, e.Message);
+                _logger.Debug(e, e.Message);
             }
         }
 
@@ -124,17 +124,17 @@ namespace Blish_HUD.Extended
         /// <param name="messageKey">The key which is used to open the message box.</param>
         public static void Insert(string text, KeyBinding messageKey)
         {
-            if (!IsTextValid(text) || !Focus(messageKey))
-            {
-                return;
-            }
             try {
                 byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result)
-                {
+                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result) {
                     SetUnicodeBytesAsync(prevClipboardContent);
                     return;
                 }
+
+                if (!IsTextValid(text) || !Focus(messageKey)) {
+                    return;
+                }
+
                 Thread.Sleep(1);
                 KeyboardUtil.Press(162, true); // LControl
                 KeyboardUtil.Stroke(86, true); // V
@@ -142,7 +142,7 @@ namespace Blish_HUD.Extended
                 KeyboardUtil.Release(162, true); // LControl
                 SetUnicodeBytesAsync(prevClipboardContent);
             } catch (Exception e) {
-                _logger.Info(e, e.Message);
+                _logger.Debug(e, e.Message);
             }
         }
 
@@ -153,45 +153,60 @@ namespace Blish_HUD.Extended
                 return GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused;
             }
 
-            while (GameService.Gw2Mumble.IsAvailable && !GameService.Gw2Mumble.UI.IsTextInputFocused)
-            {
-                // Tell the game to release the shift keys so chat can be opened.
-                KeyboardUtil.Release(160);
-                KeyboardUtil.Release(161);
-                Thread.Sleep(5);
+            // Tell the game to release the shift keys so chat can be opened.
+            KeyboardUtil.Release(160);
+            KeyboardUtil.Release(161);
+            Thread.Sleep(5);
 
-                var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
-                if (hasModifierKey)
+            var hasModifierKey = ModifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
+            if (hasModifierKey)
+            {
+                KeyboardUtil.Press(modifierKey);
+                Thread.Sleep(5);
+            }
+            if (messageKey.PrimaryKey != Keys.None)
+            {
+                KeyboardUtil.Stroke((int)messageKey.PrimaryKey);
+            }
+            if (hasModifierKey)
+            {
+                Thread.Sleep(5);
+                KeyboardUtil.Release(modifierKey);
+            }
+
+            var waitTil = DateTime.UtcNow.AddMilliseconds(500);
+            while (DateTime.UtcNow.Subtract(waitTil).TotalMilliseconds < 500 
+                   && GameService.Gw2Mumble.IsAvailable
+                   && GameService.GameIntegration.Gw2Instance.Gw2IsRunning
+                   && GameService.GameIntegration.Gw2Instance.Gw2HasFocus
+                   && GameService.GameIntegration.Gw2Instance.IsInGame)
+            {
+                if (GameService.Gw2Mumble.UI.IsTextInputFocused)
                 {
-                    KeyboardUtil.Press(modifierKey);
-                    Thread.Sleep(5);
-                }
-                if (messageKey.PrimaryKey != Keys.None)
-                {
-                    KeyboardUtil.Stroke((int)messageKey.PrimaryKey);
-                }
-                if (hasModifierKey)
-                {
-                    Thread.Sleep(5);
-                    KeyboardUtil.Release(modifierKey);
-                }
-                Thread.Sleep(250);
-                if (IsBusy()) {
-                    break;
+                    return true;
                 }
             }
-            return true;
+
+            return false;
         }
 
-        private static async Task SetUnicodeBytesAsync(byte[] clipboardContent)
+        private static void Unfocus()
+        {
+            if (GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused)
+            {
+                KeyboardUtil.Stroke(27); // ESC
+            }
+        }
+
+        private static void SetUnicodeBytesAsync(byte[] clipboardContent)
         {
             if (clipboardContent == null) {
                 return;
             }
             try {
-                await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
+                ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
             } catch (Exception e) {
-                _logger.Info(e, e.Message);
+                _logger.Debug(e, e.Message);
             }
         }
 
