@@ -153,10 +153,8 @@ namespace Blish_HUD.Extended
                 return GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused;
             }
 
-            while (!IsBusy())
+            while (GameService.Gw2Mumble.IsAvailable && !GameService.Gw2Mumble.UI.IsTextInputFocused)
             {
-                Thread.Sleep(20);
-
                 // Tell the game to release the shift keys so chat can be opened.
                 KeyboardUtil.Release(160);
                 KeyboardUtil.Release(161);
@@ -177,7 +175,10 @@ namespace Blish_HUD.Extended
                     Thread.Sleep(5);
                     KeyboardUtil.Release(modifierKey, true);
                 }
-                Thread.Sleep(5);
+                Thread.Sleep(100);
+                if (IsBusy()) {
+                    break;
+                }
             }
             return true;
         }
