@@ -39,21 +39,21 @@ namespace Blish_HUD.Extended
                     return;
                 }
 
-                Thread.Sleep(1);
+                Thread.Sleep(10);
                 KeyboardUtil.Press(162, true); // LControl
                 Thread.Sleep(10);
                 KeyboardUtil.Stroke(65, true); // A
-                Thread.Sleep(1);
-                KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(1);
-                KeyboardUtil.Stroke(46, true);   // Del
-                Thread.Sleep(1);
-                KeyboardUtil.Press(162, true);   // LControl
                 Thread.Sleep(10);
-                KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(5);
                 KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(1);
+                Thread.Sleep(10);
+                KeyboardUtil.Stroke(46, true);   // Del
+                Thread.Sleep(10);
+                KeyboardUtil.Press(162, true);   // LControl
+                Thread.Sleep(50);
+                KeyboardUtil.Stroke(86, true);   // V
+                Thread.Sleep(50);
+                KeyboardUtil.Release(162, true); // LControl
+                Thread.Sleep(10);
                 KeyboardUtil.Stroke(13); // Enter
                 SetUnicodeBytesAsync(prevClipboardContent);
             } catch (Exception e) {
@@ -75,13 +75,13 @@ namespace Blish_HUD.Extended
                     return;
                 }
 
-                Thread.Sleep(1);
-                KeyboardUtil.Press(162, true);   // LControl
                 Thread.Sleep(10);
+                KeyboardUtil.Press(162, true);   // LControl
+                Thread.Sleep(50);
                 KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(5);
+                Thread.Sleep(50);
                 KeyboardUtil.Release(162, true); // LControl
-                Thread.Sleep(1);
+                Thread.Sleep(10);
 
                 // We are now in the recipient field
                 if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient.Trim()).Result)
@@ -91,19 +91,19 @@ namespace Blish_HUD.Extended
                 }
 
                 // Paste recipient
-                Thread.Sleep(1);
+                Thread.Sleep(10);
                 KeyboardUtil.Press(162, true);   // LControl
                 Thread.Sleep(10);
                 KeyboardUtil.Stroke(86, true);   // V
-                Thread.Sleep(5);
+                Thread.Sleep(50);
                 KeyboardUtil.Release(162, true); // LControl
 
-                Thread.Sleep(1);
+                Thread.Sleep(10);
 
                 // Switch to text message field to be able to send the message
                 KeyboardUtil.Stroke(9); // Tab
 
-                Thread.Sleep(1);
+                Thread.Sleep(10);
 
                 // Send message
                 KeyboardUtil.Stroke(13); // Enter
@@ -175,7 +175,6 @@ namespace Blish_HUD.Extended
                     Thread.Sleep(5);
                     KeyboardUtil.Release(modifierKey);
                 }
-                Thread.Sleep(100);
                 if (IsBusy()) {
                     break;
                 }
