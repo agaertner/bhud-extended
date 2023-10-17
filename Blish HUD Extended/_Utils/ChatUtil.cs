@@ -175,6 +175,7 @@ namespace Blish_HUD.Extended
                     Thread.Sleep(5);
                     KeyboardUtil.Release(modifierKey);
                 }
+                Thread.Sleep(250);
                 if (IsBusy()) {
                     break;
                 }
