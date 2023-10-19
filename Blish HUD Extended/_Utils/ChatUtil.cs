@@ -37,11 +37,11 @@ namespace Blish_HUD.Extended {
                 }
 
                 KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(65, true);   // A
+                KeyboardUtil.Stroke(65);         // A
                 KeyboardUtil.Release(162, true); // LControl
-                KeyboardUtil.Stroke(46, true);   // Del
+                KeyboardUtil.Stroke(46);         // Del
                 KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86, true);   // V
+                KeyboardUtil.Stroke(86);         // V
                 KeyboardUtil.Release(162, true); // LControl
                 KeyboardUtil.Stroke(13);         // Enter
                 SetUnicodeBytesAsync(prevClipboardContent);
@@ -65,7 +65,7 @@ namespace Blish_HUD.Extended {
                 }
 
                 KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86, true);   // V
+                KeyboardUtil.Stroke(86);   // V
                 KeyboardUtil.Release(162, true); // LControl
 
                 // We are now in the recipient field
@@ -78,7 +78,7 @@ namespace Blish_HUD.Extended {
 
                 // Paste recipient
                 KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86, true);   // V
+                KeyboardUtil.Stroke(86);   // V
                 KeyboardUtil.Release(162, true); // LControl
 
                 // Switch to text message field to be able to send the message
@@ -115,7 +115,7 @@ namespace Blish_HUD.Extended {
                 }
 
                 KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86, true);   // V
+                KeyboardUtil.Stroke(86);   // V
                 KeyboardUtil.Release(162, true); // LControl
                 SetUnicodeBytesAsync(prevClipboardContent);
             } catch (Exception e) {
@@ -141,15 +141,15 @@ namespace Blish_HUD.Extended {
             }
             if (messageKey.PrimaryKey != Keys.None)
             {
-                KeyboardUtil.Stroke((int)messageKey.PrimaryKey, true);
+                KeyboardUtil.Stroke((int)messageKey.PrimaryKey);
             }
             if (hasModifierKey)
             {
                 KeyboardUtil.Release(modifierKey, true);
             }
 
-            var waitTil = DateTime.UtcNow.AddMilliseconds(500);
-            while (DateTime.UtcNow.Subtract(waitTil).TotalMilliseconds < 500 
+            var waitTil = DateTime.UtcNow.AddMilliseconds(200);
+            while (DateTime.UtcNow.Subtract(waitTil).TotalMilliseconds < 200 
                    && GameService.Gw2Mumble.IsAvailable
                    && GameService.GameIntegration.Gw2Instance.Gw2IsRunning
                    && GameService.GameIntegration.Gw2Instance.Gw2HasFocus
@@ -161,7 +161,7 @@ namespace Blish_HUD.Extended {
                 }
             }
 
-            return false;
+            return true;
         }
 
         private static void Unfocus()

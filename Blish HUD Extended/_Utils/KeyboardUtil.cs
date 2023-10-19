@@ -9,6 +9,7 @@ namespace Blish_HUD.Extended {
         private const uint WM_KEYDOWN = 0x0100;
         private const uint WM_KEYUP = 0x0101;
         private const uint WM_CHAR = 0x0102;
+
         private const uint MAPVK_VK_TO_VSC = 0x00;
         private const uint MAPVK_VSC_TO_VK = 0x01;
         private const uint MAPVK_VK_TO_CHAR = 0x02;
@@ -57,11 +58,15 @@ namespace Blish_HUD.Extended {
         [DllImport("user32.dll")]
         private static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         private static extern uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] WinApi.Input[] pInputs, int cbSize);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        [DllImport("kernel32.dll")]
+        private static extern uint GetLastError();
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern bool PostMessage(IntPtr hWnd, uint msg, uint wParam, int lParam); // sends a message asynchronously.
+
         /// <summary>
         /// Presses a key.
         /// </summary>
