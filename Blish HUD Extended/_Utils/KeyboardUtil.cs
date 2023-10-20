@@ -65,6 +65,9 @@ namespace Blish_HUD.Extended {
         private static extern uint GetLastError();
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool SendMessage(IntPtr hWnd, uint msg, uint wParam, int lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern bool PostMessage(IntPtr hWnd, uint msg, uint wParam, int lParam); // sends a message asynchronously.
 
         /// <summary>
@@ -131,7 +134,7 @@ namespace Blish_HUD.Extended {
 
                 if (ExtendedKeys.Contains(keyCode))
                     lParam.extendedKey = 1;
-                PostMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYDOWN, vkCode, lParam.GetInt());
+                SendMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYDOWN, vkCode, lParam.GetInt());
             }
             Thread.Sleep(1); // Just to give time to process the press.
         }
@@ -204,7 +207,7 @@ namespace Blish_HUD.Extended {
 
                 if (ExtendedKeys.Contains(keyCode))
                     lParam.extendedKey = 1;
-                PostMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYUP, vkCode, lParam.GetInt());
+                SendMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYUP, vkCode, lParam.GetInt());
             }
         }
 
