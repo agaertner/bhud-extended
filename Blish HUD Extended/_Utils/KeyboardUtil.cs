@@ -134,7 +134,7 @@ namespace Blish_HUD.Extended {
 
                 if (ExtendedKeys.Contains(keyCode))
                     lParam.extendedKey = 1;
-                SendMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYDOWN, vkCode, lParam.GetInt());
+                PostMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYDOWN, vkCode, lParam.GetInt());
             }
             Thread.Sleep(1); // Just to give time to process the press.
         }
@@ -207,7 +207,7 @@ namespace Blish_HUD.Extended {
 
                 if (ExtendedKeys.Contains(keyCode))
                     lParam.extendedKey = 1;
-                SendMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYUP, vkCode, lParam.GetInt());
+                PostMessage(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle, WM_KEYUP, vkCode, lParam.GetInt());
             }
         }
 
