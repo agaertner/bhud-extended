@@ -54,11 +54,14 @@ namespace Blish_HUD.Extended {
                 return;
             }
 
-            if (!KeyboardUtil.Paste() || !KeyboardUtil.Stroke(13)) {
-                logger.Warn($"Failed to send text to chat: {text}");
+            try {
+                if (!KeyboardUtil.Paste() || !KeyboardUtil.Stroke(13)) {
+                    logger.Warn($"Failed to send text to chat: {text}");
+                }
+            } finally {
+                await Unfocus();
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
             }
-
-            await SetUnicodeBytesAsync(prevClipboardContent, logger);
         }
 
         public static async Task SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey, Logger logger = null) {
@@ -81,46 +84,38 @@ namespace Blish_HUD.Extended {
                 return;
             }
 
-            if (!KeyboardUtil.Paste()) {
-                logger.Warn($"Failed to send text to chat: {cmdAndMessage}");
+            try { 
+                if (!KeyboardUtil.Paste()) {
+                    logger.Warn($"Failed to send text to chat: {cmdAndMessage}");
+                    return;
+                }
 
+                // We are now in the recipient field
+                if (!await SetTextAsync(recipient.Trim(), logger)) {
+                    return;
+                }
+
+                // Paste recipient
+                if (!KeyboardUtil.Paste()) {
+                    logger.Warn($"Failed to paste recipient: {recipient}");
+                    return;
+                }
+
+                // Switch to text message field to be able to send the message
+                if (!KeyboardUtil.Stroke(9)   // Tab
+                 || !KeyboardUtil.Stroke(13)) // Enter
+                {
+                    return;
+                }
+
+                // Fix game keeping focus in the Whisper chat edit box.
+                Thread.Sleep(1);
+                KeyboardUtil.Stroke(13); // Enter
+
+            } finally {
                 await Unfocus();
                 await SetUnicodeBytesAsync(prevClipboardContent, logger);
-                return;
             }
-
-            // We are now in the recipient field
-            if (!await SetTextAsync(recipient.Trim(), logger))
-            {
-                await Unfocus();
-                await SetUnicodeBytesAsync(prevClipboardContent, logger);
-                return;
-            }
-
-            // Paste recipient
-            if (!KeyboardUtil.Paste()) {
-                logger.Warn($"Failed to paste recipient: {recipient}");
-
-                await Unfocus();
-                await SetUnicodeBytesAsync(prevClipboardContent, logger);
-                return;
-            }
-
-            // Switch to text message field to be able to send the message
-            if (!KeyboardUtil.Stroke(9)   // Tab
-             || !KeyboardUtil.Stroke(13)) // Enter
-            {
-                await Unfocus();
-                await SetUnicodeBytesAsync(prevClipboardContent, logger);
-                return;
-            }
-
-            // Fix game keeping focus in the Whisper chat edit box.
-            Thread.Sleep(1);
-            KeyboardUtil.Stroke(13); // Enter
-
-            // Restore clipboard
-            await SetUnicodeBytesAsync(prevClipboardContent, logger);
         }
 
         /// <summary>
@@ -156,6 +151,10 @@ namespace Blish_HUD.Extended {
         }
 
         private static async Task<bool> Focus(KeyBinding messageKey) {
+            if (GameService.Gw2Mumble.UI.IsTextInputFocused) {
+                return true;
+            }
+
             return await Task.Run(() => {
                 if (messageKey == null ||
                     messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None) {
@@ -191,11 +190,11 @@ namespace Blish_HUD.Extended {
         }
 
         private static async Task<bool> Unfocus() {
-            return await Task.Run(() => {
-                if (!GameService.Gw2Mumble.UI.IsTextInputFocused) {
-                    return true;
-                }
+            if (!GameService.Gw2Mumble.UI.IsTextInputFocused) {
+                return true;
+            }
 
+            return await Task.Run(() => {
                 KeyboardUtil.Stroke(27); // ESC
 
                 var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_MS);
