@@ -10,10 +10,8 @@ namespace Blish_HUD.Extended {
     {
         public const int MAX_MESSAGE_LENGTH  = 199;
 
-        private const int WAIT_INPUT_FOCUS_MS = 250;
+        private const int WAIT_MS = 250;
 
-        private static Logger _logger             = Logger.GetLogger(typeof(ChatUtil));
-        
         private static readonly IReadOnlyDictionary<ModifierKeys, int> _modifierLookUp = new Dictionary<ModifierKeys, int>
         {
             {ModifierKeys.Alt, 18},
@@ -22,86 +20,107 @@ namespace Blish_HUD.Extended {
         };
 
         /// <summary>
+        /// Gives focus to the chat edit box and deletes any existing text.
+        /// </summary>
+        /// <param name="messageKey">The key which is used to open the chat edit box.</param>
+        public static async Task<bool> Clear(KeyBinding messageKey) {
+            return await Focus(messageKey) && KeyboardUtil.Clear();
+        }
+
+        /// <summary>
         /// Clears the input box and then sends the given text. 
         /// </summary>
         /// <param name="text">The text to send.</param>
-        /// <param name="messageKey">The key which is used to open the message box.</param>
-        public static async Task Send(string text, KeyBinding messageKey)
+        /// <param name="messageKey">The key which is used to open the chat edit box.</param>
+        /// <param name="logger">Logger to use for logging.</param>
+        public static async Task Send(string text, KeyBinding messageKey, Logger logger = null)
         {
+            logger ??= Logger.GetLogger(typeof(ChatUtil));
+
+            byte[] prevClipboardContent = null;
+
             try {
-                byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
-
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result) {
-                    SetUnicodeBytesAsync(prevClipboardContent);
-                    return;
-                }
-
-                if (!IsTextValid(text) || !await Focus(messageKey)) {
-                    return;
-                }
-
-                KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(65);         // A
-                KeyboardUtil.Release(162, true); // LControl
-                KeyboardUtil.Stroke(46);         // Del
-                KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86);         // V
-                KeyboardUtil.Release(162, true); // LControl
-                KeyboardUtil.Stroke(13);         // Enter
-                SetUnicodeBytesAsync(prevClipboardContent);
+               prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
             } catch (Exception e) {
-                _logger.Debug(e, e.Message);
+                logger.Debug(e, e.Message);
             }
+
+            if (!await SetTextAsync(text, logger)) {
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                return;
+            }
+
+            if (!IsTextValid(text, logger) || !await Focus(messageKey)) {
+                return;
+            }
+
+            if (!KeyboardUtil.Paste() || !KeyboardUtil.Stroke(13)) {
+                logger.Warn($"Failed to send text to chat: {text}");
+            }
+
+            await SetUnicodeBytesAsync(prevClipboardContent, logger);
         }
 
-        public static async Task SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey) {
-            try
-            {
-                byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
+        public static async Task SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey, Logger logger = null) {
+            logger ??= Logger.GetLogger(typeof(ChatUtil));
 
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(cmdAndMessage).Result) {
-                    SetUnicodeBytesAsync(prevClipboardContent);
-                    return;
-                }
+            byte[] prevClipboardContent = null;
 
-                if (!IsTextValid(cmdAndMessage) || !await Focus(messageKey)) {
-                    return;
-                }
-
-                KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86);   // V
-                KeyboardUtil.Release(162, true); // LControl
-
-                // We are now in the recipient field
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(recipient.Trim()).Result)
-                {
-                    await Unfocus();
-                    SetUnicodeBytesAsync(prevClipboardContent);
-                    return;
-                }
-
-                // Paste recipient
-                KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86);   // V
-                KeyboardUtil.Release(162, true); // LControl
-
-                // Switch to text message field to be able to send the message
-                KeyboardUtil.Stroke(9); // Tab
-
-                // Send message
-                KeyboardUtil.Stroke(13); // Enter
-
-                // Fix game keeping focus in the Whisper chat edit box.
-                Thread.Sleep(1);
-                KeyboardUtil.Stroke(13); // Enter
-
-                // Restore clipboard
-                SetUnicodeBytesAsync(prevClipboardContent);
+            try {
+                prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
+            } catch (Exception e) {
+                logger.Debug(e, e.Message);
             }
-            catch (Exception e)
-            {
-                _logger.Debug(e, e.Message);
+
+            if (!await SetTextAsync(cmdAndMessage, logger)) {
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                return;
             }
+
+            if (!IsTextValid(cmdAndMessage, logger) || !await Focus(messageKey)) {
+                return;
+            }
+
+            if (!KeyboardUtil.Paste()) {
+                logger.Warn($"Failed to send text to chat: {cmdAndMessage}");
+
+                await Unfocus();
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                return;
+            }
+
+            // We are now in the recipient field
+            if (!await SetTextAsync(recipient.Trim(), logger))
+            {
+                await Unfocus();
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                return;
+            }
+
+            // Paste recipient
+            if (!KeyboardUtil.Paste()) {
+                logger.Warn($"Failed to paste recipient: {recipient}");
+
+                await Unfocus();
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                return;
+            }
+
+            // Switch to text message field to be able to send the message
+            if (!KeyboardUtil.Stroke(9)   // Tab
+             || !KeyboardUtil.Stroke(13)) // Enter
+            {
+                await Unfocus();
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                return;
+            }
+
+            // Fix game keeping focus in the Whisper chat edit box.
+            Thread.Sleep(1);
+            KeyboardUtil.Stroke(13); // Enter
+
+            // Restore clipboard
+            await SetUnicodeBytesAsync(prevClipboardContent, logger);
         }
 
         /// <summary>
@@ -109,33 +128,38 @@ namespace Blish_HUD.Extended {
         /// </summary>
         /// <param name="text">The text to insert.</param>
         /// <param name="messageKey">The key which is used to open the message box.</param>
-        public static async Task Insert(string text, KeyBinding messageKey)
+        /// <param name="logger">Logger to use for logging.</param>
+        public static async Task Insert(string text, KeyBinding messageKey, Logger logger = null)
         {
+            logger ??= Logger.GetLogger(typeof(ChatUtil));
+
+            byte[] prevClipboardContent = null;
+
             try {
-                byte[] prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
-                if (!ClipboardUtil.WindowsClipboardService.SetTextAsync(text).Result) {
-                    SetUnicodeBytesAsync(prevClipboardContent);
-                    return;
-                }
-
-                if (!IsTextValid(text) || !await Focus(messageKey)) {
-                    return;
-                }
-
-                KeyboardUtil.Press(162, true);   // LControl
-                KeyboardUtil.Stroke(86);   // V
-                KeyboardUtil.Release(162, true); // LControl
-                SetUnicodeBytesAsync(prevClipboardContent);
+                prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
             } catch (Exception e) {
-                _logger.Debug(e, e.Message);
+                logger.Debug(e, e.Message);
             }
+
+            if (!await SetTextAsync(text, logger)) {
+                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                return;
+            }
+
+            if (!IsTextValid(text, logger) || !await Focus(messageKey)) {
+                return;
+            }
+
+            KeyboardUtil.Paste();
+
+            await SetUnicodeBytesAsync(prevClipboardContent, logger);
         }
 
         private static async Task<bool> Focus(KeyBinding messageKey) {
             return await Task.Run(() => {
                 if (messageKey == null ||
                     messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None) {
-                    return GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused;
+                    return GameService.Gw2Mumble.UI.IsTextInputFocused;
                 }
 
                 // Tell the game to release the shift keys so chat can be opened.
@@ -145,23 +169,19 @@ namespace Blish_HUD.Extended {
                 var hasModifierKey = _modifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
 
                 if (hasModifierKey) {
-                    KeyboardUtil.Press(modifierKey, true);
+                    KeyboardUtil.Press(modifierKey);
                 }
 
                 if (messageKey.PrimaryKey != Keys.None) {
-                    KeyboardUtil.Stroke((int) messageKey.PrimaryKey);
+                    KeyboardUtil.Stroke((int)messageKey.PrimaryKey);
                 }
 
                 if (hasModifierKey) {
-                    KeyboardUtil.Release(modifierKey, true);
+                    KeyboardUtil.Release(modifierKey);
                 }
 
-                var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_INPUT_FOCUS_MS);
-                while (DateTime.UtcNow.Subtract(waitTil).TotalMilliseconds < WAIT_INPUT_FOCUS_MS
-                    && GameService.Gw2Mumble.IsAvailable
-                    && GameService.GameIntegration.Gw2Instance.Gw2IsRunning
-                    && GameService.GameIntegration.Gw2Instance.Gw2HasFocus
-                    && GameService.GameIntegration.Gw2Instance.IsInGame) {
+                var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_MS);
+                while (DateTime.UtcNow < waitTil) {
                     if (GameService.Gw2Mumble.UI.IsTextInputFocused) {
                         return true;
                     }
@@ -172,16 +192,14 @@ namespace Blish_HUD.Extended {
 
         private static async Task<bool> Unfocus() {
             return await Task.Run(() => {
-                if (GameService.Gw2Mumble.IsAvailable && GameService.Gw2Mumble.UI.IsTextInputFocused) {
-                    KeyboardUtil.Stroke(27); // ESC
+                if (!GameService.Gw2Mumble.UI.IsTextInputFocused) {
+                    return true;
                 }
 
-                var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_INPUT_FOCUS_MS);
-                while (DateTime.UtcNow.Subtract(waitTil).TotalMilliseconds < WAIT_INPUT_FOCUS_MS
-                    && GameService.Gw2Mumble.IsAvailable
-                    && GameService.GameIntegration.Gw2Instance.Gw2IsRunning
-                    && GameService.GameIntegration.Gw2Instance.Gw2HasFocus
-                    && GameService.GameIntegration.Gw2Instance.IsInGame) {
+                KeyboardUtil.Stroke(27); // ESC
+
+                var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_MS);
+                while (DateTime.UtcNow < waitTil) {
                     if (!GameService.Gw2Mumble.UI.IsTextInputFocused) {
                         return true;
                     }
@@ -190,28 +208,49 @@ namespace Blish_HUD.Extended {
             });
         }
 
-        private static void SetUnicodeBytesAsync(byte[] clipboardContent)
+        private static async Task<bool> SetUnicodeBytesAsync(byte[] clipboardContent, Logger logger)
         {
             if (clipboardContent == null) {
-                return;
+                return true;
             }
             try {
-                ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
+                return await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(clipboardContent);
             } catch (Exception e) {
-                _logger.Debug(e, e.Message);
+                logger.Debug(e, e.Message);
             }
+            return false;
         }
 
-        private static bool IsTextValid(string text)
+        private static async Task<bool> SetTextAsync(string text, Logger logger, int retries = 5) {
+            try {
+                do {
+                    if (await ClipboardUtil.WindowsClipboardService.SetTextAsync(text)) {
+                        return true;
+                    }
+                    retries--;
+                    await Task.Delay(WAIT_MS);
+                } while (retries > 0);
+            } catch (Exception e) {
+
+                if (retries > 0) {
+                    return await SetTextAsync(text, logger, retries - 1);
+                }
+
+                logger.Debug(e, e.Message);
+            }
+            return false;
+        }
+
+        private static bool IsTextValid(string text, Logger logger)
         {
             if (string.IsNullOrEmpty(text))
             {
-                _logger.Info($"Invalid chat message. Argument '{nameof(text)}' was null or empty.");
+                logger.Info($"Invalid chat message. Argument '{nameof(text)}' was null or empty.");
                 return false;
             }
             if (text.Length > MAX_MESSAGE_LENGTH)
             {
-                _logger.Info($"Invalid chat message. Argument '{nameof(text)}' exceeds limit of {MAX_MESSAGE_LENGTH} characters. Value: \"{text.Substring(0, 25)}[..+{MAX_MESSAGE_LENGTH-25}]\"");
+                logger.Info($"Invalid chat message. Argument '{nameof(text)}' exceeds limit of {MAX_MESSAGE_LENGTH} characters. Value: \"{text.Substring(0, 25)}[..+{MAX_MESSAGE_LENGTH-25}]\"");
                 return false;
             }
             return true;
