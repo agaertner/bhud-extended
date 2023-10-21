@@ -95,8 +95,6 @@ namespace Blish_HUD.Extended {
         }
 
         private static bool EmulateInput(int keyCode, bool pressed, bool sendToSystem = false) {
-            Thread.Sleep(1); // Just give time to process any previous input.
-
             var waitTil = DateTime.UtcNow.AddMilliseconds(500);
             while (DateTime.UtcNow < waitTil) {
                 if (sendToSystem) {

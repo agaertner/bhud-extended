@@ -56,10 +56,10 @@ namespace Blish_HUD.Extended {
 
             try {
                 if (!KeyboardUtil.Paste() || !KeyboardUtil.Stroke(13)) {
-                    logger.Warn($"Failed to send text to chat: {text}");
+                    logger.Info($"Failed to send text to chat: {text}");
+                    await Unfocus();
                 }
             } finally {
-                await Unfocus();
                 await SetUnicodeBytesAsync(prevClipboardContent, logger);
             }
         }
@@ -86,18 +86,21 @@ namespace Blish_HUD.Extended {
 
             try { 
                 if (!KeyboardUtil.Paste()) {
-                    logger.Warn($"Failed to send text to chat: {cmdAndMessage}");
+                    logger.Info($"Failed to send text to chat: {cmdAndMessage}");
+                    await Unfocus();
                     return;
                 }
 
                 // We are now in the recipient field
                 if (!await SetTextAsync(recipient.Trim(), logger)) {
+                    await Unfocus();
                     return;
                 }
 
                 // Paste recipient
                 if (!KeyboardUtil.Paste()) {
-                    logger.Warn($"Failed to paste recipient: {recipient}");
+                    logger.Info($"Failed to paste recipient: {recipient}");
+                    await Unfocus();
                     return;
                 }
 
@@ -105,6 +108,7 @@ namespace Blish_HUD.Extended {
                 if (!KeyboardUtil.Stroke(9)   // Tab
                  || !KeyboardUtil.Stroke(13)) // Enter
                 {
+                    await Unfocus();
                     return;
                 }
 
@@ -113,7 +117,6 @@ namespace Blish_HUD.Extended {
                 KeyboardUtil.Stroke(13); // Enter
 
             } finally {
-                await Unfocus();
                 await SetUnicodeBytesAsync(prevClipboardContent, logger);
             }
         }
@@ -151,11 +154,11 @@ namespace Blish_HUD.Extended {
         }
 
         private static async Task<bool> Focus(KeyBinding messageKey) {
-            if (GameService.Gw2Mumble.UI.IsTextInputFocused) {
-                return true;
-            }
-
             return await Task.Run(() => {
+                if (GameService.Gw2Mumble.UI.IsTextInputFocused) {
+                    return true;
+                }
+
                 if (messageKey == null ||
                     messageKey.PrimaryKey == Keys.None && messageKey.ModifierKeys == ModifierKeys.None) {
                     return GameService.Gw2Mumble.UI.IsTextInputFocused;
@@ -190,11 +193,11 @@ namespace Blish_HUD.Extended {
         }
 
         private static async Task<bool> Unfocus() {
-            if (!GameService.Gw2Mumble.UI.IsTextInputFocused) {
-                return true;
-            }
-
             return await Task.Run(() => {
+                if (!GameService.Gw2Mumble.UI.IsTextInputFocused) {
+                    return true;
+                }
+
                 KeyboardUtil.Stroke(27); // ESC
 
                 var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_MS);
