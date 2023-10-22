@@ -2,7 +2,6 @@ using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Blish_HUD.Extended {
@@ -105,16 +104,12 @@ namespace Blish_HUD.Extended {
                 }
 
                 // Switch to text message field to be able to send the message
-                if (!KeyboardUtil.Stroke(9)   // Tab
-                 || !KeyboardUtil.Stroke(13)) // Enter
-                {
-                    await Unfocus();
-                    return;
-                }
-
-                // Fix game keeping focus in the Whisper chat edit box.
-                Thread.Sleep(1);
+                KeyboardUtil.Stroke(9);   // Tab
                 KeyboardUtil.Stroke(13); // Enter
+                
+                // Fix game keeping focus in the Whisper chat edit box.
+                await Task.Delay(1);
+                await Unfocus();
 
             } finally {
                 await SetUnicodeBytesAsync(prevClipboardContent, logger);
