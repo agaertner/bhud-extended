@@ -104,11 +104,13 @@ namespace Blish_HUD.Extended {
                 }
 
                 // Switch to text message field to be able to send the message
+                await Task.Delay(1);
                 KeyboardUtil.Stroke(9);   // Tab
+                await Task.Delay(1);
                 KeyboardUtil.Stroke(13); // Enter
                 
                 // Fix game keeping focus in the Whisper chat edit box.
-                await Task.Delay(1);
+                await Task.Delay(50);
                 await Unfocus();
 
             } finally {
