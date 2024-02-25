@@ -35,7 +35,7 @@ namespace Blish_HUD.Extended
         /// <returns>Given locale or default fallback locale.</returns>
         /// <remarks>English, Spanish, German, French are the default supported locales.</remarks>
         public static Locale SupportedOrDefault(this Locale locale, params Locale[] supported) {
-            if (supported?.Any() ?? true) {
+            if (!supported?.Any() ?? true) {
                 return locale switch
                 {
                     Locale.Spanish => locale,
