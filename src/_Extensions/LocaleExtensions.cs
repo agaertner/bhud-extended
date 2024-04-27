@@ -13,7 +13,8 @@ namespace Blish_HUD.Extended
         /// </remarks>
         /// <param name="locale">Locale to return the language code of.</param>
         /// <returns>A new string representing the language code.</returns>
-        public static string Code(this Locale locale)
+        // ReSharper disable once InconsistentNaming
+        public static string TwoLetterISOLanguageName(this Locale locale)
         {
             return locale switch
             {
@@ -26,7 +27,6 @@ namespace Blish_HUD.Extended
                 _ => "en"
             };
         }
-
         /// <summary>
         /// Checks if the given locale is supported and returns the default supported locale if not.
         /// </summary>

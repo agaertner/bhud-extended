@@ -32,38 +32,40 @@ namespace Blish_HUD.Extended {
         /// <param name="text">The text to send.</param>
         /// <param name="messageKey">The key which is used to open the chat edit box.</param>
         /// <param name="logger">Logger to use for logging.</param>
-        public static async Task Send(string text, KeyBinding messageKey, Logger logger = null)
+        public static async Task<bool> Send(string text, KeyBinding messageKey, Logger logger = null)
         {
             logger ??= Logger.GetLogger(typeof(ChatUtil));
 
             byte[] prevClipboardContent = null;
 
             try {
-               prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
+                prevClipboardContent = ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync().Result;
             } catch (Exception e) {
                 logger.Debug(e, e.Message);
             }
 
             if (!await SetTextAsync(text, logger)) {
                 await SetUnicodeBytesAsync(prevClipboardContent, logger);
-                return;
+                return false;
             }
 
             if (!IsTextValid(text, logger) || !await Focus(messageKey)) {
-                return;
+                return false;
             }
 
             try {
                 if (!KeyboardUtil.Paste() || !KeyboardUtil.Stroke(13)) {
                     logger.Info($"Failed to send text to chat: {text}");
                     await Unfocus();
+                    return false;
                 }
+                return true;
             } finally {
-                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                await SetUnicodeBytesAsync(prevClipboardContent, logger); // Reset old clipboard state.
             }
         }
 
-        public static async Task SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey, Logger logger = null) {
+        public static async Task<bool> SendWhisper(string recipient, string cmdAndMessage, KeyBinding messageKey, Logger logger = null) {
             logger ??= Logger.GetLogger(typeof(ChatUtil));
 
             byte[] prevClipboardContent = null;
@@ -76,45 +78,45 @@ namespace Blish_HUD.Extended {
 
             if (!await SetTextAsync(cmdAndMessage, logger)) {
                 await SetUnicodeBytesAsync(prevClipboardContent, logger);
-                return;
+                return false;
             }
 
             if (!IsTextValid(cmdAndMessage, logger) || !await Focus(messageKey)) {
-                return;
+                return false;
             }
 
             try { 
                 if (!KeyboardUtil.Paste()) {
-                    logger.Info($"Failed to send text to chat: {cmdAndMessage}");
+                    logger.Info($"Failed to paste whisper message: {cmdAndMessage}");
                     await Unfocus();
-                    return;
+                    return false;
                 }
 
                 // We are now in the recipient field
                 if (!await SetTextAsync(recipient.Trim(), logger)) {
                     await Unfocus();
-                    return;
+                    return false;
                 }
 
                 // Paste recipient
                 if (!KeyboardUtil.Paste()) {
-                    logger.Info($"Failed to paste recipient: {recipient}");
+                    logger.Info($"Failed to paste whisper recipient: {recipient}");
                     await Unfocus();
-                    return;
+                    return false;
                 }
 
                 // Switch to text message field to be able to send the message
                 await Task.Delay(1);
-                KeyboardUtil.Stroke(9);   // Tab
+                var success = KeyboardUtil.Stroke(9);   // Tab
                 await Task.Delay(1);
-                KeyboardUtil.Stroke(13); // Enter
+                success = success && KeyboardUtil.Stroke(13); // Enter
                 
                 // Fix game keeping focus in the Whisper chat edit box.
                 await Task.Delay(50);
                 await Unfocus();
-
+                return success;
             } finally {
-                await SetUnicodeBytesAsync(prevClipboardContent, logger);
+                await SetUnicodeBytesAsync(prevClipboardContent, logger); // Reset old clipboard state.
             }
         }
 
@@ -124,7 +126,7 @@ namespace Blish_HUD.Extended {
         /// <param name="text">The text to insert.</param>
         /// <param name="messageKey">The key which is used to open the message box.</param>
         /// <param name="logger">Logger to use for logging.</param>
-        public static async Task Insert(string text, KeyBinding messageKey, Logger logger = null)
+        public static async Task<bool> Insert(string text, KeyBinding messageKey, Logger logger = null)
         {
             logger ??= Logger.GetLogger(typeof(ChatUtil));
 
@@ -138,16 +140,18 @@ namespace Blish_HUD.Extended {
 
             if (!await SetTextAsync(text, logger)) {
                 await SetUnicodeBytesAsync(prevClipboardContent, logger);
-                return;
+                return false;
             }
 
             if (!IsTextValid(text, logger) || !await Focus(messageKey)) {
-                return;
+                return false;
             }
 
-            KeyboardUtil.Paste();
+            var success = KeyboardUtil.Paste();
 
-            await SetUnicodeBytesAsync(prevClipboardContent, logger);
+            await SetUnicodeBytesAsync(prevClipboardContent, logger); // Reset old clipboard state.
+
+            return success;
         }
 
         private static async Task<bool> Focus(KeyBinding messageKey) {
@@ -161,22 +165,31 @@ namespace Blish_HUD.Extended {
                     return GameService.Gw2Mumble.UI.IsTextInputFocused;
                 }
 
-                // Tell the game to release the shift keys so chat can be opened.
-                KeyboardUtil.Release(160);
-                KeyboardUtil.Release(161);
+                var sendKeys = new List<Func<bool>>
+                {
+                    // Tell the game to release the shift keys so chat can be opened.
+                    () => KeyboardUtil.Release(160),
+                    () => KeyboardUtil.Release(161)
+                };
 
                 var hasModifierKey = _modifierLookUp.TryGetValue(messageKey.ModifierKeys, out var modifierKey);
 
                 if (hasModifierKey) {
-                    KeyboardUtil.Press(modifierKey);
+                    sendKeys.Add(() => KeyboardUtil.Press(modifierKey));
                 }
 
                 if (messageKey.PrimaryKey != Keys.None) {
-                    KeyboardUtil.Stroke((int)messageKey.PrimaryKey);
+                    sendKeys.Add(() => KeyboardUtil.Stroke((int)messageKey.PrimaryKey));
                 }
 
                 if (hasModifierKey) {
-                    KeyboardUtil.Release(modifierKey);
+                    sendKeys.Add(() => KeyboardUtil.Release(modifierKey));
+                }
+
+                foreach (var sendKey in sendKeys) {
+                    if (!sendKey.Invoke()) {
+                        return false;
+                    }
                 }
 
                 var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_MS);
@@ -195,7 +208,10 @@ namespace Blish_HUD.Extended {
                     return true;
                 }
 
-                KeyboardUtil.Stroke(27); // ESC
+                if (!KeyboardUtil.Stroke(27)) // ESC
+                {
+                    return false;
+                } 
 
                 var waitTil = DateTime.UtcNow.AddMilliseconds(WAIT_MS);
                 while (DateTime.UtcNow < waitTil) {
