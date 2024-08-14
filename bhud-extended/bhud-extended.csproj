@@ -284,6 +284,7 @@
     <Compile Include="Extensions\Gw2SharpExtensions\MapTypeExtensions.cs" />
     <Compile Include="Extensions\SpriteBatchExtensions.cs" />
     <Compile Include="Extensions\LocaleExtensions.cs" />
+    <Compile Include="Utils\BlishUtil.cs" />
     <Compile Include="Utils\ChatUtil.cs" />
     <Compile Include="Utils\KeyboardUtil.cs" />
     <Compile Include="Utils\MouseUtil.cs" />
