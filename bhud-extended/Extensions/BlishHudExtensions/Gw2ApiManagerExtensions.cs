@@ -59,14 +59,14 @@ namespace Blish_HUD.Extended
         /// <returns><see langword="True"/> if <see cref="IsApiAvailable"/> returns <see langword="true"/> <b>AND</b> a subkey covering the required permissions is available; otherwise <see langword="false"/>.</returns>
         public static bool IsAuthorized(this Gw2ApiManager gw2ApiManager, bool showMessage = false, params TokenPermission[] requiredPermissions)
         {
-            if (IsApiAvailable(gw2ApiManager, showMessage)) {
+            if (!IsApiAvailable(gw2ApiManager, showMessage)) {
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(GameService.Gw2Mumble.PlayerCharacter.Name))
             {
                 if (showMessage) {
-                    ScreenNotification.ShowNotification($"{Resources.API_unavailable_} {Resources.Please__login_to_a_character_}", ScreenNotification.NotificationType.Error);
+                    ScreenNotification.ShowNotification($"{Resources.API_unavailable_}\n{Resources.Please__login_to_a_character_}", ScreenNotification.NotificationType.Error);
                 }
                 Logger.GetLogger<Gw2ApiManager>().Info("API unavailable: No character logged in. - No key can be selected because a character has to be logged in once.");
                 return false;
@@ -76,7 +76,7 @@ namespace Blish_HUD.Extended
             if (!gw2ApiManager.HasPermission(TokenPermission.Account)) // Subtokens created without the essential Account scope are unusable.
             {
                 if (showMessage) {
-                    ScreenNotification.ShowNotification($"{Resources.Missing_API_key_} {string.Format(Resources.Please__add_an_API_key_to__0__, "Blish HUD")}", ScreenNotification.NotificationType.Error);
+                    ScreenNotification.ShowNotification($"{Resources.Missing_API_key_}\n{string.Format(Resources.Please__add_an_API_key_to__0__, "Blish HUD")}", ScreenNotification.NotificationType.Error);
                 }
                 Logger.GetLogger<Gw2ApiManager>().Info("Missing API key: Foreign account. - No key associated with the logged in account was found.");
                 return false;
