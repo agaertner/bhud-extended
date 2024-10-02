@@ -285,6 +285,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\BlishHudExtensions\Gw2ApiManagerExtensions.cs" />
+    <Compile Include="Extensions\BlishHudExtensions\Gw2MumbleServiceExtensions.cs" />
+    <Compile Include="Extensions\Gw2SharpExtensions\CoordinatesExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\BlishHudExtensions\ContentsManagerExtensions.cs" />
