@@ -38,8 +38,8 @@ namespace Blish_HUD.Extended
 
         private static ErrorPrompt _singleton;
 
-        private static AsyncTexture2D _bgTexture;
-        private static AsyncTexture2D _icon;
+        private AsyncTexture2D _bgTexture;
+        private AsyncTexture2D _icon;
 
         private static BitmapFont _font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size20, ContentService.FontStyle.Regular);
 
@@ -56,6 +56,7 @@ namespace Blish_HUD.Extended
         private readonly string _text;
         private readonly DialogButtons _enterButton;
         private readonly DialogButtons _escapeButton;
+
 
         private ErrorPrompt(string text, DialogButtons buttons, Action<DialogButtons> callback = null, DialogIcon icon = DialogIcon.None, AsyncTexture2D customIcon = null, DialogButtons enterButton = DialogButtons.None, DialogButtons escapeButton = DialogButtons.None) {
             _text = text;
@@ -90,14 +91,11 @@ namespace Blish_HUD.Extended
                 _icon = customIcon;
             } else if (icon > DialogIcon.None) {
                 _icon = new AsyncTexture2D();
-                var infoIconAtlas = GameService.Content.DatAssetCache.GetTextureFromAssetId(154985);
-                if (infoIconAtlas.HasTexture) {
-                    GetIconRegion(icon, infoIconAtlas.Texture);
-                } else {
-                    infoIconAtlas.TextureSwapped += (_, e) => {
+                GameService.Content.DatAssetCache.GetTextureFromAssetId(154985).TextureSwapped += (_, e) => {
+                    if (e.NewValue != null) {
                         GetIconRegion(icon, e.NewValue);
-                    };
-                }
+                    }
+                };
             }
         }
 
@@ -127,6 +125,7 @@ namespace Blish_HUD.Extended
         protected override void DisposeControl() {
             _singleton = null;
             _bgTexture?.Dispose();
+            _icon?.Dispose();
             GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
             base.DisposeControl();
         }
