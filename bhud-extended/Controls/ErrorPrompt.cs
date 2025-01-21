@@ -91,13 +91,21 @@ namespace Blish_HUD.Extended
             } else if (icon > DialogIcon.None) {
                 _icon = new AsyncTexture2D();
                 var infoIconAtlas = GameService.Content.DatAssetCache.GetTextureFromAssetId(154985);
-                infoIconAtlas.TextureSwapped += (_, e) => {
-                    if (icon == DialogIcon.Exclamation) {
-                        _icon.SwapTexture(e.NewValue.GetRegion(0, 0, 64, 64));
-                    } else if (icon == DialogIcon.Question) {
-                        _icon.SwapTexture(e.NewValue.GetRegion(64, 0, 64, 64));
-                    }
-                };
+                if (infoIconAtlas.HasTexture) {
+                    GetIconRegion(icon, infoIconAtlas.Texture);
+                } else {
+                    infoIconAtlas.TextureSwapped += (_, e) => {
+                        GetIconRegion(icon, e.NewValue);
+                    };
+                }
+            }
+        }
+
+        private void GetIconRegion(DialogIcon icon, Texture2D atlas) {
+            if (icon == DialogIcon.Exclamation) {
+                _icon.SwapTexture(atlas.GetRegion(0, 0, 64, 64));
+            } else if (icon == DialogIcon.Question) {
+                _icon.SwapTexture(atlas.GetRegion(64, 0, 64, 64));
             }
         }
 
