@@ -8,7 +8,6 @@ using MonoGame.Extended.BitmapFonts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -52,14 +51,14 @@ namespace Blish_HUD.Extended
 
         private readonly Dictionary<DialogButtons, StandardButton> _buttons;
 
-        private readonly Func<DialogButtons, Task> _callback;
+        private readonly Action<DialogButtons> _callback;
 
         private readonly string _text;
         private readonly DialogButtons _enterButton;
         private readonly DialogButtons _escapeButton;
 
 
-        private ErrorPrompt(string text, DialogButtons buttons, Func<DialogButtons, Task> callback = null, DialogIcon icon = DialogIcon.None, AsyncTexture2D customIcon = null, DialogButtons enterButton = DialogButtons.None, DialogButtons escapeButton = DialogButtons.None) {
+        private ErrorPrompt(string text, DialogButtons buttons, Action<DialogButtons> callback = null, DialogIcon icon = DialogIcon.None, AsyncTexture2D customIcon = null, DialogButtons enterButton = DialogButtons.None, DialogButtons escapeButton = DialogButtons.None) {
             _text = text;
             _buttons = new Dictionary<DialogButtons, StandardButton>();
             foreach (DialogButtons button in Enum.GetValues(typeof(DialogButtons))) {
@@ -111,11 +110,13 @@ namespace Blish_HUD.Extended
         private bool IsValidDialog(out string errorMessage) {
             errorMessage = string.Empty;
             var noButtons = _buttons.Count < 1;
-            if (noButtons) {
+            if (noButtons)
+            {
                 errorMessage += "Prompt dialog must have at least one button. ";
             }
             var noText = string.IsNullOrWhiteSpace(_text);
-            if (noText) {
+            if (noText)
+            {
                 errorMessage += "Prompt dialog must have text content.";
             }
             return string.IsNullOrEmpty(errorMessage);
@@ -129,26 +130,25 @@ namespace Blish_HUD.Extended
             base.DisposeControl();
         }
 
-        private async Task ButtonPress(DialogButtons button) {
-            if (button == DialogButtons.None) {
+        private void ButtonPress(DialogButtons button) {
+            if (button == DialogButtons.None)
+            {
                 return;
             }
             GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
             GameService.Content.PlaySoundEffectByName("button-click");
-            if (_callback != null) {
-                await _callback.Invoke(button);
-            }
+            _callback?.Invoke(button);
             _singleton = null;
             this.Dispose();
         }
 
-        private async void OnKeyPressed(object o, KeyboardEventArgs e) {
+        private void OnKeyPressed(object o, KeyboardEventArgs e) {
             switch (e.Key) {
                 case Keys.Enter:
-                    await this.ButtonPress(_enterButton);
+                    this.ButtonPress(_enterButton);
                     break;
                 case Keys.Escape:
-                    await this.ButtonPress(_escapeButton);
+                    this.ButtonPress(_escapeButton);
                     break;
                 default: return;
             }
@@ -162,7 +162,7 @@ namespace Blish_HUD.Extended
         /// <param name="callback">Function that is called when a button is pressed.</param>
         /// <param name="enterButton">Buttons that can be pressed via the Enter key on the keyboard.</param>
         /// <param name="escapeButton">Buttons that can be pressed via the Escape key on the keyboard.</param>
-        public static void Show(string text, DialogButtons buttons, Func<DialogButtons, Task> callback = null,
+        public static void Show(string text, DialogButtons buttons, Action<DialogButtons> callback = null,
                                       DialogButtons enterButton = DialogButtons.None,
                                       DialogButtons escapeButton = DialogButtons.None) {
             Show(text, DialogIcon.None, null, buttons, callback, enterButton, escapeButton);
@@ -177,7 +177,7 @@ namespace Blish_HUD.Extended
         /// <param name="callback">Function that is called when a button is pressed.</param>
         /// <param name="enterButton">Buttons that can be pressed via the Enter key on the keyboard.</param>
         /// <param name="escapeButton">Buttons that can be pressed via the Escape key on the keyboard.</param>
-        public static void Show(string text, DialogIcon icon, DialogButtons buttons, Func<DialogButtons, Task> callback = null,
+        public static void Show(string text, DialogIcon icon, DialogButtons buttons, Action<DialogButtons> callback = null,
                                       DialogButtons enterButton = DialogButtons.None,
                                       DialogButtons escapeButton = DialogButtons.None) {
             Show(text, icon, null, buttons, callback, enterButton, escapeButton);
@@ -192,19 +192,20 @@ namespace Blish_HUD.Extended
         /// <param name="callback">Function that is called when a button is pressed.</param>
         /// <param name="enterButton">Buttons that can be pressed via the Enter key on the keyboard.</param>
         /// <param name="escapeButton">Buttons that can be pressed via the Escape key on the keyboard.</param>
-        public static void Show(string text, AsyncTexture2D icon, DialogButtons buttons, Func<DialogButtons, Task> callback = null,
+        public static void Show(string text, AsyncTexture2D icon, DialogButtons buttons, Action<DialogButtons> callback = null,
                                       DialogButtons enterButton = DialogButtons.None,
                                       DialogButtons escapeButton = DialogButtons.None) {
             Show(text, DialogIcon.None, icon, buttons, callback, enterButton, escapeButton);
         }
 
-        private static void Show(string text, DialogIcon icon, AsyncTexture2D customIcon, DialogButtons buttons, Func<DialogButtons, Task> callback,
+        private static void Show(string text, DialogIcon icon, AsyncTexture2D customIcon, DialogButtons buttons, Action<DialogButtons> callback,
                                        DialogButtons enterButton,
                                        DialogButtons escapeButton) {
             if (_singleton != null) {
                 return;
             }
-            _singleton = new ErrorPrompt(text, buttons, callback, icon, customIcon, enterButton, escapeButton) {
+            _singleton = new ErrorPrompt(text, buttons, callback, icon, customIcon, enterButton, escapeButton)
+            {
                 Parent = Graphics.SpriteScreen,
                 Location = Point.Zero,
                 Size = Graphics.SpriteScreen.Size
@@ -236,7 +237,7 @@ namespace Blish_HUD.Extended
                         Location = new Point(_bgBounds.Left + minLeftOffset + xOffset, yOffset),
                         Enabled = true
                     };
-                    button.Click += async (_, _) => await this.ButtonPress(buttonKey);
+                    button.Click += (_, _) => this.ButtonPress(buttonKey);
                 }
                 xOffset -= buttonWidth + _iconMargin.X;
                 _buttons[buttonKey] = button;
