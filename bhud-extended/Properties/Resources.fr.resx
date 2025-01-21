@@ -118,27 +118,51 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Missing API key." xml:space="preserve">
-    <value></value>
+    <value>Clé API manquante.</value>
   </data>
   <data name="Please, add an API key to {0}." xml:space="preserve">
-    <value></value>
+    <value>Veuillez ajouter une clé API à {0}.</value>
   </data>
   <data name="Insufficient API permissions." xml:space="preserve">
-    <value></value>
+    <value>Permissions API insuffisantes.</value>
   </data>
   <data name="Required: {0}" xml:space="preserve">
-    <value></value>
+    <value>Obligatoire: {0}</value>
   </data>
   <data name="API unavailable." xml:space="preserve">
-    <value></value>
+    <value>API indisponible.</value>
   </data>
   <data name="Please, login to a character." xml:space="preserve">
-    <value></value>
+    <value>Veuillez vous connecter à un personnage.</value>
   </data>
   <data name="Please, try again later." xml:space="preserve">
-    <value></value>
+    <value>Veuillez réessayer plus tard.</value>
   </data>
   <data name="API is down." xml:space="preserve">
-    <value></value>
+    <value>L&apos;API est en panne.</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="Ignore" xml:space="preserve">
+    <value>Ignorer</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Appliquer</value>
   </data>
 </root>
