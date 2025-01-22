@@ -83,14 +83,14 @@ namespace Blish_HUD.Extended
         }
 
         private void LoadTextures() {
-            _bgTexture = GameService.Content.DatAssetCache.GetTextureFromAssetId(156003);
+            _bgTexture = GameService.Content.DatAssetCache.GetTextureFromAssetId(156003); // Do not dispose this as it holds a shared cached texture.
         }
 
         private void LoadIcon(DialogIcon icon, AsyncTexture2D customIcon) {
             if (customIcon != null) {
-                _icon = customIcon;
+                _icon = customIcon; // Possibly a DatAssetCache texture.
             } else if (icon > DialogIcon.None) {
-                _icon = new AsyncTexture2D();
+                _icon = new AsyncTexture2D(); // Can be disposed. Will hold a non-cached texture that is just a region of the cached version.
                 GameService.Content.DatAssetCache.GetTextureFromAssetId(154985).TextureSwapped += (_, e) => {
                     if (e.NewValue != null) {
                         GetIconRegion(icon, e.NewValue);
@@ -124,7 +124,6 @@ namespace Blish_HUD.Extended
 
         protected override void DisposeControl() {
             _singleton = null;
-            _bgTexture?.Dispose();
             _icon?.Dispose();
             GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
             base.DisposeControl();
@@ -187,11 +186,16 @@ namespace Blish_HUD.Extended
         /// Shows an immovable error prompt popup window in the center of the screen.
         /// </summary>
         /// <param name="text">Text inside the popup.</param>
-        /// <param name="icon">Custom icon to use.</param>
+        /// <param name="icon">Custom icon to use. Gets disposed with the prompt.</param>
         /// <param name="buttons">Buttons that the prompt should have.</param>
         /// <param name="callback">Function that is called when a button is pressed.</param>
         /// <param name="enterButton">Buttons that can be pressed via the Enter key on the keyboard.</param>
         /// <param name="escapeButton">Buttons that can be pressed via the Escape key on the keyboard.</param>
+        /// <remarks>
+        ///     If a texture from the DatAssetCache should be used as icon then call
+        ///     <see cref="Texture2DExtension.Duplicate"/> on <see cref="AsyncTexture2D.Texture"/> prior
+        ///     to construction; otherwise the cached texture gets disposed with the prompt.
+        /// </remarks>
         public static void Show(string text, AsyncTexture2D icon, DialogButtons buttons, Action<DialogButtons> callback = null,
                                       DialogButtons enterButton = DialogButtons.None,
                                       DialogButtons escapeButton = DialogButtons.None) {
