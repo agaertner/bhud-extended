@@ -312,6 +312,7 @@
     <Compile Include="Utils\TaskUtil.cs" />
     <Compile Include="Utils\TyrianTimeUtil.cs" />
     <Compile Include="Utils\WinApi\Input.cs" />
+    <Compile Include="Utils\WindowUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
