@@ -151,9 +151,15 @@ namespace Blish_HUD.Extended
 
       protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
       {
-        this.Width = GetMinimumWidth();
+        //this.Width = GetMinimumWidth(); // Auto-size dropdown width to longest item.
 
         spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(Point.Zero, _size), Color.Black);
+
+        // Border (1px thick around dropdown)
+        spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(0, 0, _size.X, 1), Color.White * 0.5f); // Top
+        spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(0, _size.Y - 1, _size.X, 1), Color.White * 0.5f); // Bottom
+        spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(0, 0, 1, _size.Y), Color.White * 0.5f); // Left
+        spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(_size.X - 1, 0, 1, _size.Y), Color.White * 0.5f); // Right
 
         int index = 0;
         foreach (var item in _assocDropdown._items)
