@@ -288,6 +288,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\ErrorPrompt.cs" />
+    <Compile Include="Controls\KeyValueDropdown[T].cs" />
     <Compile Include="Extensions\BlishHudExtensions\Gw2ApiManagerExtensions.cs" />
     <Compile Include="Extensions\BlishHudExtensions\Gw2MumbleServiceExtensions.cs" />
     <Compile Include="Extensions\Gw2SharpExtensions\CoordinatesExtensions.cs" />
