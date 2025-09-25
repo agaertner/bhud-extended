@@ -37,5 +37,13 @@ namespace Blish_HUD.Extended
         {
             DrawRectangleOnCtrl(spriteBatch, ctrl, bounds, lineWidth, Color.Black);
         }
+
+        public static void DrawRectangleOnCtrl(this SpriteBatch spriteBatch, Control ctrl, Rectangle bounds, Color color) {
+            DrawRectangleOnCtrl(spriteBatch, ctrl, bounds, Math.Min(bounds.Width, bounds.Height) / 2, color);
+        }
+
+        public static void DrawRectangleOnCtrl(this SpriteBatch spriteBatch, Control ctrl, Rectangle bounds) {
+            DrawRectangleOnCtrl(spriteBatch, ctrl, bounds, Color.Black);
+        }
     }
 }
