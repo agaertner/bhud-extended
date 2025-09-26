@@ -1,0 +1,205 @@
+﻿using Blish_HUD.Controls;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.TextureAtlases;
+using System;
+using System.Collections.Generic;
+
+namespace Blish_HUD.Extended
+{
+    public class TextDropdown<T> : KeyValueDropdown<T> {
+
+        #region Load Static
+
+        private static readonly Texture2D _textureInputBox = Content.GetTexture("input-box");
+
+        private static readonly TextureRegion2D _textureArrow       = Blish_HUD.Controls.Resources.Control.TextureAtlasControl.GetRegion("inputboxes/dd-arrow");
+        private static readonly TextureRegion2D _textureArrowActive = Blish_HUD.Controls.Resources.Control.TextureAtlasControl.GetRegion("inputboxes/dd-arrow-active");
+
+        #endregion
+
+        private SortedList<T, string> _itemTexts;
+        private SortedList<T, Color>  _itemColors;
+
+        private string _selectedItemText;
+        private Color  _selectedItemColor;
+
+        private string _placeholderText;
+        public string PlaceholderText {
+            get => _placeholderText;
+            set {
+                if (SetProperty(ref _placeholderText, value)) {
+                    OnItemsUpdated();
+                }
+            }
+        }
+
+        private bool _autoSizeWidth;
+        public bool AutoSizeWidth {
+            get => _autoSizeWidth;
+            set {
+                if (SetProperty(ref _autoSizeWidth, value)) {
+                    OnItemsUpdated();
+                }
+            }
+        }
+
+        public TextDropdown() {
+            _itemTexts        = new SortedList<T, string>();
+            _itemColors       = new SortedList<T, Color>();
+            _placeholderText  = string.Empty;
+            _selectedItemText = string.Empty;
+            _selectedItemColor = Color.White;
+        }
+
+        public bool AddItem(T value, string text, string tooltip = "", Color color = default) {
+            if (base.AddItem(value, string.IsNullOrEmpty(tooltip) ? text : tooltip))
+            {
+                _itemTexts.Add(value, text);
+                _itemColors.Add(value, color.Equals(default) ?
+                                           Color.FromNonPremultiplied(239, 240, 239, 255) :
+                                           color);
+                OnItemsUpdated();
+                return true;
+            }
+            return false;
+        }
+
+        public bool AddItem(T value, string text, Color color) {
+            return AddItem(value, text, string.Empty, color);
+        }
+
+        public override bool RemoveItem(T value) {
+            if (base.RemoveItem(value)) {
+                _itemTexts.Remove(value);
+                _itemColors.Remove(value);
+                OnItemsUpdated();
+                return true;
+            }
+            return false;
+        }
+
+        public override void Clear() {
+            _itemTexts.Clear();
+            _itemColors.Clear();
+            base.Clear();
+        }
+
+        private void OnItemsUpdated() 
+        {
+            if (this.HasSelected && _itemTexts != null && _itemColors != null) {
+                // Update in case SelectedItem was set before the items were added (eg. object initializer syntax).
+                _selectedItemText  = _itemTexts.TryGetValue(SelectedItem, out var displayText) ? displayText : string.Empty;
+                _selectedItemColor = _itemColors.TryGetValue(SelectedItem, out var color) ? color : Color.White;
+            }
+
+            if (AutoSizeWidth) {
+                int width = this.Width;
+                if (!string.IsNullOrEmpty(_selectedItemText)) {
+                    width = (int)Math.Round(Content.DefaultFont14.MeasureString(_selectedItemText).Width);
+                } else if (!string.IsNullOrEmpty(_placeholderText)) {
+                    width = (int)Math.Round(Content.DefaultFont14.MeasureString(_placeholderText).Width);
+                }
+                this.Width = width + 13 + _textureArrow.Width;
+            }
+        }
+
+        private Color GetItemColor(T item) {
+            if (_itemColors.TryGetValue(item, out var color)) {
+                return color;
+            }
+            return Color.White;
+        }
+
+        private string GetItemText(T item) {
+            if (_itemTexts.TryGetValue(item, out string text)) {
+                return text;
+            }
+            return string.Empty;
+        }
+
+        protected override void OnSelectedItemChanged(T previous, T current) {
+            _selectedItemText  = GetItemText(current);
+            _selectedItemColor = GetItemColor(current);
+            base.OnSelectedItemChanged(previous, current);
+        }
+
+        protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
+            // Draw dropdown
+            spriteBatch.DrawOnCtrl(this,
+                                   _textureInputBox,
+                                   new Rectangle(Point.Zero, _size).Subtract(new Rectangle(0, 0, 5, 0)),
+                                   new Rectangle(0, 0,
+                                                 Math.Min(_textureInputBox.Width - 5, this.Width - 5),
+                                                 _textureInputBox.Height));
+
+            // Draw right side of dropdown
+            spriteBatch.DrawOnCtrl(this,
+                                   _textureInputBox,
+                                   new Rectangle(_size.X - 5, 0, 5, _size.Y),
+                                   new Rectangle(_textureInputBox.Width - 5, 0,
+                                                 5, _textureInputBox.Height));
+
+            // Draw dropdown arrow
+            spriteBatch.DrawOnCtrl(this,
+                                   (this.Enabled && this.MouseOver) ? _textureArrowActive : _textureArrow,
+                                   new Rectangle(_size.X - _textureArrow.Width - 5,
+                                                 _size.Y / 2 - _textureArrow.Height / 2,
+                                                 _textureArrow.Width,
+                                                 _textureArrow.Height));
+
+            // Draw text
+            if (string.IsNullOrEmpty(_selectedItemText)) {
+                spriteBatch.DrawStringOnCtrl(this,
+                                             _placeholderText,
+                                             Content.DefaultFont14,
+                                             new Rectangle(5, 0,
+                                                           _size.X - 10 - _textureArrow.Width,
+                                                           _size.Y),
+                                             (this.Enabled
+                                                  ? Color.FromNonPremultiplied(209, 210, 209, 255)
+                                                  : Control.StandardColors.DisabledText));
+            } else {
+                spriteBatch.DrawStringOnCtrl(this,
+                                             _selectedItemText,
+                                             Content.DefaultFont14,
+                                             new Rectangle(5, 0,
+                                                           _size.X - 10 - _textureArrow.Width,
+                                                           _size.Y),
+                                             (this.Enabled
+                                                  ? _selectedItemColor
+                                                  : Control.StandardColors.DisabledText));
+            }
+        }
+
+        protected override void PaintDropdownItem(DropdownPanel panel, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
+            var itemBounds = new Rectangle(0, index * this.Height, panel.Width, this.Height);
+            if (highlighted) {
+                spriteBatch.DrawOnCtrl(panel, ContentService.Textures.Pixel,
+                                       new Rectangle(2, 2 + itemBounds.Y, this.Width - 4, itemBounds.Height - 4),
+                                       new Color(45, 37, 25, 255));
+                spriteBatch.DrawStringOnCtrl(panel,
+                                             GetItemText(item),
+                                             Content.DefaultFont14,
+                                             new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
+                                             _itemColors.TryGetValue(item, out var color) ?
+                                                 color : ContentService.Colors.Chardonnay);
+            } else {
+                spriteBatch.DrawStringOnCtrl(panel,
+                                             GetItemText(item),
+                                             Content.DefaultFont14,
+                                             new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
+                                             _itemColors.TryGetValue(item, out var color) ?
+                                                 color * 0.95f : Color.FromNonPremultiplied(239, 240, 239, 255));
+            }
+        }
+
+        protected override int GetHighlightedItemIndex(Point relativeMousePosition) {
+            return relativeMousePosition.Y / this.Height;
+        }
+
+        protected override Point GetDropdownSize() {
+            return new Point(this.Width, this.Height * _itemTexts.Count);
+        }
+    }
+}

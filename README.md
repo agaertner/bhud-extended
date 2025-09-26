@@ -10,14 +10,19 @@ If you locate your submodules outside of your project directory you can include 
 by manually adding the following ItemGroup to your \*.csproj and adjusting as needed.
 
 ```xml
-<ItemGroup>
-    <Compile Include="..\submodules\bhud-extended\**\*.cs" Link="_Submodules\%(RecursiveDir)%(Filename)%(Extension)"/>
+  <ItemGroup>
+    <Compile Include="..\submodules\bhud-extended\**\*.cs" Link="_Submodules\%(RecursiveDir)%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\submodules\bhud-extended\**\Properties\*.resx" Link="_Submodules\%(RecursiveDir)%(Filename)%(Extension)">
-        <!--Required to make the ResourceManager find translations -->
-        <LogicalName>Blish_HUD.Extended.Properties.%(Filename).resources</LogicalName>
-        <Visible>False</Visible>
+      <!--Required to make the ResourceManager find translations -->
+      <LogicalName>Blish_HUD.Extended.Properties.%(Filename).resources</LogicalName>
+      <Visible>False</Visible>
+    </EmbeddedResource>
+    <!-- Binary resources (png, wav, etc.) -->
+    <EmbeddedResource Include="..\submodules\bhud-extended\**\ref\**\*.png;..\submodules\bhud-extended\**\ref\**\*.wav" Link="_Submodules\%(RecursiveDir)%(Filename)%(Extension)">
+      <LogicalName>Resources.%(Filename)%(Extension)</LogicalName>
+      <Visible>False</Visible>
     </EmbeddedResource>
     <!-- Exclude AssemblyInfo.cs of submodule projects to avoid duplication error (Compile Error CS0579) -->
     <Compile Remove="..\submodules\**\AssemblyInfo.cs" />
-</ItemGroup>
+  </ItemGroup>
 ```
