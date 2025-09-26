@@ -27,7 +27,15 @@ namespace Blish_HUD.Extended
 
         protected override void DisposeControl() {
             _textureEmptySlot?.Dispose();
+            DisposeIcons();
             base.DisposeControl();
+        }
+
+        private void DisposeIcons() {
+            foreach (var icon in _itemIcons.Values) {
+                icon?.Dispose();
+            }
+            _itemIcons.Clear();
         }
 
         public bool AddItem(T value, string tooltip, AsyncTexture2D icon) {
@@ -39,22 +47,15 @@ namespace Blish_HUD.Extended
             return false;
         }
 
-        public override bool RemoveItem(T value) {
-            if (base.RemoveItem(value)) {
-                _itemIcons.Remove(value);
-                OnItemsUpdated();
-                return true;
-            }
-            return false;
+        protected override void OnItemRemoved(T item) {
+            _itemIcons.Remove(item);
         }
 
-        public override void Clear() {
-            _itemIcons.Clear();
-            base.Clear();
-            OnItemsUpdated();
+        protected override void OnItemsCleared() {
+            DisposeIcons();
         }
 
-        private void OnItemsUpdated() {
+        protected override void OnItemsUpdated() {
             if (this.HasSelected && _itemIcons != null) {
                 // Update in case SelectedItem was set before the items were added (eg. object initializer syntax).
                 _selectedItemIcon = _itemIcons.TryGetValue(SelectedItem, out var displayIcon) ? displayIcon : null;
@@ -70,7 +71,6 @@ namespace Blish_HUD.Extended
 
         protected override void OnSelectedItemChanged(T previous, T current) {
             _selectedItemIcon = GetItemIcon(current);
-            base.OnSelectedItemChanged(previous, current);
         }
 
         private Point GetMaxItemSize() {

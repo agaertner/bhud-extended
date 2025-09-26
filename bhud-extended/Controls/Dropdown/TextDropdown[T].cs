@@ -23,6 +23,7 @@ namespace Blish_HUD.Extended
 
         private string _selectedItemText;
         private Color  _selectedItemColor;
+        private Color  _defaultColor;
 
         private string _placeholderText;
         public string PlaceholderText {
@@ -45,11 +46,12 @@ namespace Blish_HUD.Extended
         }
 
         public TextDropdown() {
-            _itemTexts        = new SortedList<T, string>();
-            _itemColors       = new SortedList<T, Color>();
-            _placeholderText  = string.Empty;
-            _selectedItemText = string.Empty;
-            _selectedItemColor = Color.White;
+            _itemTexts         = new SortedList<T, string>();
+            _itemColors        = new SortedList<T, Color>();
+            _placeholderText   = string.Empty;
+            _selectedItemText  = string.Empty;
+            _defaultColor      = Color.FromNonPremultiplied(239, 240, 239, 255);
+            _selectedItemColor = _defaultColor;
         }
 
         public bool AddItem(T value, string text, string tooltip = "", Color color = default) {
@@ -57,7 +59,7 @@ namespace Blish_HUD.Extended
             {
                 _itemTexts.Add(value, text);
                 _itemColors.Add(value, color.Equals(default) ?
-                                           Color.FromNonPremultiplied(239, 240, 239, 255) :
+                                           _defaultColor :
                                            color);
                 OnItemsUpdated();
                 return true;
@@ -69,28 +71,25 @@ namespace Blish_HUD.Extended
             return AddItem(value, text, string.Empty, color);
         }
 
-        public override bool RemoveItem(T value) {
-            if (base.RemoveItem(value)) {
-                _itemTexts.Remove(value);
-                _itemColors.Remove(value);
-                OnItemsUpdated();
-                return true;
-            }
-            return false;
+        protected override void OnItemRemoved(T value) {
+            _itemTexts.Remove(value);
+            _itemColors.Remove(value);
         }
 
-        public override void Clear() {
+        protected override void OnItemsCleared() {
             _itemTexts.Clear();
             _itemColors.Clear();
-            base.Clear();
         }
 
-        private void OnItemsUpdated() 
+        protected override void OnItemsUpdated() 
         {
             if (this.HasSelected && _itemTexts != null && _itemColors != null) {
                 // Update in case SelectedItem was set before the items were added (eg. object initializer syntax).
                 _selectedItemText  = _itemTexts.TryGetValue(SelectedItem, out var displayText) ? displayText : string.Empty;
-                _selectedItemColor = _itemColors.TryGetValue(SelectedItem, out var color) ? color : Color.White;
+                _selectedItemColor = _itemColors.TryGetValue(SelectedItem, out var color) ? color : _defaultColor;
+            } else {
+                _selectedItemText  = string.Empty;
+                _selectedItemColor = _defaultColor;
             }
 
             if (AutoSizeWidth) {
@@ -121,7 +120,6 @@ namespace Blish_HUD.Extended
         protected override void OnSelectedItemChanged(T previous, T current) {
             _selectedItemText  = GetItemText(current);
             _selectedItemColor = GetItemColor(current);
-            base.OnSelectedItemChanged(previous, current);
         }
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
@@ -190,7 +188,7 @@ namespace Blish_HUD.Extended
                                              Content.DefaultFont14,
                                              new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
                                              _itemColors.TryGetValue(item, out var color) ?
-                                                 color * 0.95f : Color.FromNonPremultiplied(239, 240, 239, 255));
+                                                 color * 0.95f : _defaultColor);
             }
         }
 

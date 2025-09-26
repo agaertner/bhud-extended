@@ -167,9 +167,9 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Occurs when the <see cref="SelectedItem"/> property has changed.
         /// </summary>
-        public event EventHandler<ValueChangedEventArgs<T>> ValueChanged;
+        public event EventHandler<ValueChangedEventArgs<T>> SelectedItemChanged;
         protected virtual void OnSelectedItemChanged(T previous, T current) {
-            ValueChanged?.Invoke(this, new ValueChangedEventArgs<T>(previous, current));
+            /* NOOP */
         }
 
         private readonly SortedList<T, string> _items;
@@ -183,6 +183,7 @@ namespace Blish_HUD.Extended
                 T prev = _selectedItem;
                 if (SetProperty(ref _selectedItem, value)) {
                     this.HasSelected = true;
+                    SelectedItemChanged?.Invoke(this, new ValueChangedEventArgs<T>(prev, _selectedItem));
                     OnSelectedItemChanged(prev, _selectedItem);
                 }
             }
@@ -202,30 +203,36 @@ namespace Blish_HUD.Extended
             this.Size = Dropdown.Standard.Size;
         }
 
-        protected virtual bool AddItem(T key, string value)
+        protected bool AddItem(T item, string tooltip)
         {
-            if (_items.ContainsKey(key))
+            if (_items.ContainsKey(item))
             {
                 return false;
             }
-            _items.Add(key, value);
+            _items.Add(item, tooltip);
+            OnItemAdded(item);
+            OnItemsUpdated();
             Invalidate();
             return true;
         }
 
-        public virtual bool RemoveItem(T key)
+        public bool RemoveItem(T key)
         {
             if (!_items.Remove(key))
             {
                 return false;
             }
+            OnItemRemoved(key);
+            OnItemsUpdated();
             Invalidate();
             return true;
         }
 
-        public virtual void Clear()
+        public void Clear()
         {
             _items.Clear();
+            OnItemsCleared();
+            OnItemsUpdated();
             Invalidate();
         }
 
@@ -258,7 +265,37 @@ namespace Blish_HUD.Extended
         }
 
         /// <summary>
-        /// Draws the expanded dropdown panel background.
+        /// Called whenever an item is added to the <see cref="KeyValueDropdown{T}"/>.
+        /// </summary>
+        /// <param name="item"></param>
+        protected virtual void OnItemAdded(T item) {
+            /* NOOP */
+        }
+
+        /// <summary>
+        /// Called whenever an item is removed from the <see cref="KeyValueDropdown{T}"/>.
+        /// </summary>
+        /// <param name="item">Item that was removed.</param>
+        protected virtual void OnItemRemoved(T item) {
+            /* NOOP */
+        }
+
+        /// <summary>
+        /// Called whenever all items are cleared from the <see cref="KeyValueDropdown{T}"/>.
+        /// </summary>
+        protected virtual void OnItemsCleared() {
+            /* NOOP */
+        }
+
+        /// <summary>
+        /// Called whenever the amount of items in the <see cref="KeyValueDropdown{T}"/> has changed.
+        /// </summary>
+        protected virtual void OnItemsUpdated() {
+            /* NOOP */
+        }
+
+        /// <summary>
+        /// Draws the background of the expanded <see cref="DropdownPanel"/>.
         /// </summary>
         /// <param name="panel">The expanded <seealso cref="DropdownPanel"/> to draw on.</param>
         /// <param name="spriteBatch">The <seealso cref="SpriteBatch"/> to use for drawing.</param>
@@ -270,7 +307,7 @@ namespace Blish_HUD.Extended
         }
 
         /// <summary>
-        /// Draws an individual item in the expanded dropdown panel.
+        /// Draws an individual item on the expanded <see cref="DropdownPanel"/>.
         /// </summary>
         /// <param name="panel">The expanded <seealso cref="DropdownPanel"/> to draw on.</param>
         /// <param name="spriteBatch">The <seealso cref="SpriteBatch"/> to use for drawing.</param>
