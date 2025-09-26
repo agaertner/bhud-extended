@@ -48,7 +48,10 @@ namespace Blish_HUD.Extended
         }
 
         protected override void OnItemRemoved(T item) {
-            _itemIcons.Remove(item);
+            if (_itemIcons.TryGetValue(item, out var icon)) { 
+                icon?.Dispose();
+                _itemIcons.Remove(item);
+            }
         }
 
         protected override void OnItemsCleared() {
