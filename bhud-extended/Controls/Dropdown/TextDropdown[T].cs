@@ -64,7 +64,7 @@ namespace Blish_HUD.Extended
             _selectedItemText  = string.Empty;
             _defaultColor      = Color.FromNonPremultiplied(239, 240, 239, 255);
             _selectedItemColor = _defaultColor;
-            _placeholderColor  = new Color(_defaultColor.R, _defaultColor.G, _defaultColor.B, _defaultColor.A / 2);
+            _placeholderColor  = Color.FromNonPremultiplied(209, 210, 209, 255);
             _font              = Content.DefaultFont14;
         }
 
