@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Audio;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Linq;
@@ -20,8 +21,23 @@ namespace Blish_HUD.Extended
             if (stream == null)
                 throw new InvalidOperationException($"Failed to open stream for '{fileName}'.");
 
-            using var gdx = GameService.Graphics.LendGraphicsDeviceContext();
-            return Texture2D.FromStream(gdx.GraphicsDevice, stream);
+            using var gdx     = GameService.Graphics.LendGraphicsDeviceContext();
+            var       texture = Texture2D.FromStream(gdx.GraphicsDevice, stream);
+            // Premultiply alpha
+            Color[] pixels = new Color[texture.Width * texture.Height];
+            texture.GetData(pixels);
+            for (int i = 0; i < pixels.Length; i++) {
+                var   c     = pixels[i];
+                float alpha = c.A / 255f;
+                pixels[i] = new Color(
+                                      (byte)(c.R * alpha),
+                                      (byte)(c.G * alpha),
+                                      (byte)(c.B * alpha),
+                                      c.A
+                                     );
+            }
+            texture.SetData(pixels);
+            return texture;
         }
 
         /// <summary>

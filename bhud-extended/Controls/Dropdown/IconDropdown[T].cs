@@ -25,6 +25,11 @@ namespace Blish_HUD.Extended
             _textureEmptySlot = EmbeddedResourceLoader.LoadTexture("156900.png");
         }
 
+        protected override void DisposeControl() {
+            _textureEmptySlot?.Dispose();
+            base.DisposeControl();
+        }
+
         public bool AddItem(T value, string tooltip, AsyncTexture2D icon) {
             if (base.AddItem(value, tooltip)) {
                 _itemIcons.Add(value, icon);
