@@ -1,6 +1,7 @@
 ﻿using Blish_HUD.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.BitmapFonts;
 using MonoGame.Extended.TextureAtlases;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace Blish_HUD.Extended
         private string _selectedItemText;
         private Color  _selectedItemColor;
         private Color  _defaultColor;
+        private Color  _placeholderColor;
 
         private string _placeholderText;
         public string PlaceholderText {
@@ -45,6 +47,16 @@ namespace Blish_HUD.Extended
             }
         }
 
+        private BitmapFont _font;
+        public BitmapFont Font {
+            get => _font;
+            set {
+                if (SetProperty(ref _font, value)) {
+                    OnItemsUpdated();
+                }
+            }
+        }
+
         public TextDropdown() {
             _itemTexts         = new SortedList<T, string>();
             _itemColors        = new SortedList<T, Color>();
@@ -52,6 +64,8 @@ namespace Blish_HUD.Extended
             _selectedItemText  = string.Empty;
             _defaultColor      = Color.FromNonPremultiplied(239, 240, 239, 255);
             _selectedItemColor = _defaultColor;
+            _placeholderColor  = new Color(_defaultColor.R, _defaultColor.G, _defaultColor.B, _defaultColor.A / 2);
+            _font              = Content.DefaultFont14;
         }
 
         public bool AddItem(T value, string text, string tooltip = "", Color color = default) {
@@ -95,9 +109,9 @@ namespace Blish_HUD.Extended
             if (AutoSizeWidth) {
                 int width = this.Width;
                 if (!string.IsNullOrEmpty(_selectedItemText)) {
-                    width = (int)Math.Round(Content.DefaultFont14.MeasureString(_selectedItemText).Width);
+                    width = (int)Math.Round(_font.MeasureString(_selectedItemText).Width);
                 } else if (!string.IsNullOrEmpty(_placeholderText)) {
-                    width = (int)Math.Round(Content.DefaultFont14.MeasureString(_placeholderText).Width);
+                    width = (int)Math.Round(_font.MeasureString(_placeholderText).Width);
                 }
                 this.Width = width + 13 + _textureArrow.Width;
             }
@@ -150,17 +164,17 @@ namespace Blish_HUD.Extended
             if (string.IsNullOrEmpty(_selectedItemText)) {
                 spriteBatch.DrawStringOnCtrl(this,
                                              _placeholderText,
-                                             Content.DefaultFont14,
+                                             _font,
                                              new Rectangle(5, 0,
                                                            _size.X - 10 - _textureArrow.Width,
                                                            _size.Y),
                                              (this.Enabled
-                                                  ? Color.FromNonPremultiplied(209, 210, 209, 255)
+                                                  ? _placeholderColor
                                                   : Control.StandardColors.DisabledText));
             } else {
                 spriteBatch.DrawStringOnCtrl(this,
                                              _selectedItemText,
-                                             Content.DefaultFont14,
+                                             _font,
                                              new Rectangle(5, 0,
                                                            _size.X - 10 - _textureArrow.Width,
                                                            _size.Y),
@@ -178,14 +192,14 @@ namespace Blish_HUD.Extended
                                        new Color(45, 37, 25, 255));
                 spriteBatch.DrawStringOnCtrl(panel,
                                              GetItemText(item),
-                                             Content.DefaultFont14,
+                                             _font,
                                              new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
                                              _itemColors.TryGetValue(item, out var color) ?
                                                  color : ContentService.Colors.Chardonnay);
             } else {
                 spriteBatch.DrawStringOnCtrl(panel,
                                              GetItemText(item),
-                                             Content.DefaultFont14,
+                                             _font,
                                              new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
                                              _itemColors.TryGetValue(item, out var color) ?
                                                  color * 0.95f : _defaultColor);

@@ -115,7 +115,7 @@ namespace Blish_HUD.Extended
                 return;
             }
 
-            spriteBatch.DrawOnCtrl(panel, _textureEmptySlot,  bounds, Color.White);
+            spriteBatch.DrawOnCtrl(panel, _textureEmptySlot, bounds, Color.White);
             var centered = GetInner(bounds).GetCenteredFit(icon.Bounds.Size);
             spriteBatch.DrawOnCtrl(panel, icon, centered);
 
