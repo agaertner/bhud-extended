@@ -8,17 +8,41 @@ namespace Blish_HUD.Extended
 {
     public class IconDropdown<T> : KeyValueDropdown<T> {
 
-        private SortedList<T, AsyncTexture2D> _itemIcons;
+        private readonly SortedList<T, AsyncTexture2D> _itemIcons;
 
         private AsyncTexture2D _selectedItemIcon;
 
         private const int BORDER_WIDTH = 2;
 
-        public int ItemsPerRow { get; set; } = 5;
-        public int IconPadding { get; set; } = 2;
-        public int EdgePadding { get; set; } = 8;
+        private int _itemsPerRow = 5;
+        public int ItemsPerRow {
+            get => _itemsPerRow;
+            set {
+                if (SetProperty(ref _itemsPerRow, value)) {
+                    Invalidate();
+                }
+            }
+        }
+        private int _iconPadding = 2;
+        public int IconPadding {
+            get => _iconPadding;
+            set {
+                if (SetProperty(ref _iconPadding, value)) {
+                    Invalidate();
+                }
+            }
+        }
 
-        private Texture2D _textureEmptySlot;
+        private int _edgePadding = 8;
+        public  int EdgePadding { get => _edgePadding;
+            set {
+                if (SetProperty(ref _edgePadding, value)) {
+                    Invalidate();
+                }
+            }
+        }
+
+        private readonly Texture2D _textureEmptySlot;
 
         public IconDropdown() {
             _itemIcons        = new SortedList<T, AsyncTexture2D>();
@@ -38,13 +62,27 @@ namespace Blish_HUD.Extended
             _itemIcons.Clear();
         }
 
-        public bool AddItem(T value, string tooltip, AsyncTexture2D icon) {
+        /// <summary>
+        /// Adds an item with an associated icon to the dropdown.
+        /// </summary>
+        /// <param name="value">Value of the item.</param>
+        /// <param name="tooltip">Tooltip of the item.</param>
+        /// <param name="icon">Associated icon that is displayed.</param>
+        /// <returns></returns>
+        public void AddItem(T value, Func<string> tooltip, AsyncTexture2D icon) {
             if (base.AddItem(value, tooltip)) {
                 _itemIcons.Add(value, icon);
                 OnItemsUpdated();
-                return true;
             }
-            return false;
+        }
+
+        /// <summary>
+        /// Adds an item with an associated icon to the dropdown.
+        /// </summary>
+        /// <param name="value">Value of the item.</param>
+        /// <param name="icon">Associated icon that is displayed.</param>
+        public void AddItem(T value, AsyncTexture2D icon) {
+            AddItem(value, null, icon);
         }
 
         protected override void OnItemRemoved(T item) {
@@ -77,7 +115,7 @@ namespace Blish_HUD.Extended
         }
 
         private Point GetMaxItemSize() {
-            if (_itemIcons.Count == 0 || ItemsPerRow <= 0) return Point.Zero;
+            if (_itemIcons.Count == 0 || _itemsPerRow <= 0) return Point.Zero;
             int maxIconWidth  = 0;
             int maxIconHeight = 0;
             foreach (var icon in _itemIcons.Values) {
@@ -89,21 +127,22 @@ namespace Blish_HUD.Extended
         }
 
         private Rectangle GetItemBounds(int index) {
-            int col = index % ItemsPerRow;
-            int row = index / ItemsPerRow;
+            int col = index % _itemsPerRow;
+            int row = index / _itemsPerRow;
 
             var maxIconSize  = GetMaxItemSize();
 
-            int paddedWidth  = maxIconSize.X + IconPadding;
-            int paddedHeight = maxIconSize.Y + IconPadding;
+            int paddedWidth  = maxIconSize.X + _iconPadding;
+            int paddedHeight = maxIconSize.Y + _iconPadding;
 
-            int x = EdgePadding + col * paddedWidth;
-            int y = EdgePadding + row * paddedHeight;
+            int x = _edgePadding + col * paddedWidth;
+            int y = _edgePadding + row * paddedHeight;
 
             return new Rectangle(x, y, maxIconSize.X, maxIconSize.Y);
         }
 
         private Rectangle GetInner(Rectangle bounds) {
+            // Returns the "visual" inner frame of the empty slot texture.
             var shrink = bounds;
             shrink.Inflate(-7, -7);
             return shrink;
@@ -147,15 +186,15 @@ namespace Blish_HUD.Extended
         }
 
         protected override Point GetDropdownSize() {
-            if (_itemIcons.Count == 0 || ItemsPerRow <= 0) return Point.Zero;
+            if (_itemIcons.Count == 0 || _itemsPerRow <= 0) return Point.Zero;
 
             var maxIconSize = GetMaxItemSize();
 
-            int columns  = Math.Min(ItemsPerRow, _itemIcons.Count);
-            int rows = (_itemIcons.Count + ItemsPerRow - 1) / ItemsPerRow;
+            int columns  = Math.Min(_itemsPerRow, _itemIcons.Count);
+            int rows = (_itemIcons.Count + _itemsPerRow - 1) / _itemsPerRow;
 
-            int totalWidth  = columns * maxIconSize.X + (columns - 1) * IconPadding + 2 * EdgePadding;
-            int totalHeight = rows    * maxIconSize.Y + (rows    - 1) * IconPadding + 2 * EdgePadding;
+            int totalWidth  = columns * maxIconSize.X + (columns - 1) * _iconPadding + 2 * _edgePadding;
+            int totalHeight = rows    * maxIconSize.Y + (rows    - 1) * _iconPadding + 2 * _edgePadding;
 
             return new Point(totalWidth, totalHeight);
         }

@@ -33,7 +33,7 @@ namespace Blish_HUD.Extended
 
             private double _hoverTime;
 
-            private int _startTop;
+            private readonly int _startTop;
 
 
             private DropdownPanel(KeyValueDropdown<T> assocDropdown)
@@ -92,7 +92,7 @@ namespace Blish_HUD.Extended
                 base.OnMouseMoved(e);
             }
 
-            private KeyValuePair<T, string> GetActiveItem()
+            private KeyValuePair<T, Func<string>> GetActiveItem()
             {
                 return _highlightedItemIndex > 0 && _highlightedItemIndex < _dropdown._items.Count 
                            ? _dropdown._items.ElementAt(_highlightedItemIndex) 
@@ -110,7 +110,7 @@ namespace Blish_HUD.Extended
                     _hoverTime = 0;
                 }
                 this.BasicTooltipText = _hoverTime > TOOLTIP_HOVER_DELAY 
-                                            ? GetActiveItem().Value 
+                                            ? GetActiveItem().Value?.Invoke() 
                                             : string.Empty;
             }
 
@@ -172,7 +172,7 @@ namespace Blish_HUD.Extended
             /* NOOP */
         }
 
-        private readonly SortedList<T, string> _items;
+        private readonly SortedList<T, Func<string>> _items;
 
         private T _selectedItem;
         public T SelectedItem
@@ -199,11 +199,11 @@ namespace Blish_HUD.Extended
         /// </summary>
         protected KeyValueDropdown()
         {
-            _items = new SortedList<T, string>();
+            _items = new SortedList<T, Func<string>>();
             this.Size = Dropdown.Standard.Size;
         }
 
-        protected bool AddItem(T item, string tooltip)
+        protected bool AddItem(T item, Func<string> tooltip)
         {
             if (_items.ContainsKey(item))
             {
@@ -267,7 +267,7 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Called whenever an item is added to the <see cref="KeyValueDropdown{T}"/>.
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">Item that was added</param>
         protected virtual void OnItemAdded(T item) {
             /* NOOP */
         }

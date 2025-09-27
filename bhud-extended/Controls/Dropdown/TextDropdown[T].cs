@@ -19,13 +19,13 @@ namespace Blish_HUD.Extended
 
         #endregion
 
-        private SortedList<T, string> _itemTexts;
-        private SortedList<T, Color>  _itemColors;
+        private readonly SortedList<T, string> _itemTexts;
+        private readonly SortedList<T, Color>  _itemColors;
 
-        private string _selectedItemText;
-        private Color  _selectedItemColor;
-        private Color  _defaultColor;
-        private Color  _placeholderColor;
+        private          string _selectedItemText;
+        private          Color  _selectedItemColor;
+        private readonly Color  _defaultColor;
+        private readonly Color  _placeholderColor;
 
         private string _placeholderText;
         public string PlaceholderText {
@@ -33,6 +33,7 @@ namespace Blish_HUD.Extended
             set {
                 if (SetProperty(ref _placeholderText, value)) {
                     OnItemsUpdated();
+                    Invalidate();
                 }
             }
         }
@@ -43,6 +44,7 @@ namespace Blish_HUD.Extended
             set {
                 if (SetProperty(ref _autoSizeWidth, value)) {
                     OnItemsUpdated();
+                    Invalidate();
                 }
             }
         }
@@ -53,6 +55,7 @@ namespace Blish_HUD.Extended
             set {
                 if (SetProperty(ref _font, value)) {
                     OnItemsUpdated();
+                    Invalidate();
                 }
             }
         }
@@ -68,21 +71,33 @@ namespace Blish_HUD.Extended
             _font              = Content.DefaultFont14;
         }
 
-        public bool AddItem(T value, string text, string tooltip = "", Color color = default) {
-            if (base.AddItem(value, string.IsNullOrEmpty(tooltip) ? text : tooltip))
+        /// <summary>
+        /// Adds an item with an associated color to the dropdown.
+        /// </summary>
+        /// <param name="value">Value of the item.</param>
+        /// <param name="text">Displayed text.</param>
+        /// <param name="tooltip">Basic tooltip text of the item.</param>
+        /// <param name="color">Color of the displayed text.</param>
+        public void AddItem(T value, string text, Func<string> tooltip = null, Color color = default) {
+            if (base.AddItem(value, tooltip ?? (() => text)))
             {
                 _itemTexts.Add(value, text);
                 _itemColors.Add(value, color.Equals(default) ?
                                            _defaultColor :
                                            color);
                 OnItemsUpdated();
-                return true;
             }
-            return false;
         }
 
-        public bool AddItem(T value, string text, Color color) {
-            return AddItem(value, text, string.Empty, color);
+        /// <summary>
+        /// Adds an item with an associated color to the dropdown.
+        /// </summary>
+        /// <param name="value">Value of the item.</param>
+        /// <param name="text">Displayed text.</param>
+        /// <param name="color">Color of the displayed text.</param>
+        /// <returns></returns>
+        public void AddItem(T value, string text, Color color) {
+            AddItem(value, text, null, color);
         }
 
         protected override void OnItemRemoved(T value) {
