@@ -136,7 +136,7 @@ namespace Blish_HUD.Extended
             if (_itemColors.TryGetValue(item, out var color)) {
                 return color;
             }
-            return Color.White;
+            return _defaultColor;
         }
 
         private string GetItemText(T item) {
