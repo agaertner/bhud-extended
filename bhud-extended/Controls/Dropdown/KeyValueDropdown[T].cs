@@ -230,10 +230,15 @@ namespace Blish_HUD.Extended
 
         public void Clear()
         {
+            Deselect();
             _items.Clear();
             OnItemsCleared();
             OnItemsUpdated();
             Invalidate();
+        }
+
+        public void Deselect() {
+            this.HasSelected = false;
         }
 
         /// <summary>

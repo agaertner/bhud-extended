@@ -100,6 +100,8 @@ namespace Blish_HUD.Extended
             if (this.HasSelected && _itemIcons != null) {
                 // Update in case SelectedItem was set before the items were added (eg. object initializer syntax).
                 _selectedItemIcon = _itemIcons.TryGetValue(SelectedItem, out var displayIcon) ? displayIcon : null;
+            } else {
+                _selectedItemIcon = null;
             }
         }
 
@@ -163,7 +165,7 @@ namespace Blish_HUD.Extended
 
             if (highlighted) {
                 spriteBatch.DrawRectangleOnCtrl(panel, bounds, BORDER_WIDTH, Color.White * 0.7f);
-            } else if (!Equals(item, SelectedItem)) {
+            } else if (!this.HasSelected || !Equals(item, SelectedItem)) {
                 spriteBatch.DrawRectangleOnCtrl(panel, bounds, Color.Black * 0.4f);
             }
         }
