@@ -9,7 +9,7 @@ namespace Blish_HUD.Extended
 {
     public abstract class BaseDropdown<T> : Control
     {
-        protected sealed class DropdownMenu : Control
+        protected sealed class DropdownMenu : Panel
         {
             private const int TOOLTIP_HOVER_DELAY = 800;
             private const int SCROLL_CLOSE_THRESHOLD = 20;
@@ -40,7 +40,7 @@ namespace Blish_HUD.Extended
                 _size      = _dropdown.GetDropdownSize();
                 _location  = GetPanelLocation();
                 _zIndex    = Screen.TOOLTIP_BASEZINDEX;
-                
+                _canScroll = true;
                 _startTop  = _location.Y;
 
                 this.Parent = Graphics.SpriteScreen;
@@ -122,7 +122,7 @@ namespace Blish_HUD.Extended
                 }
             }
 
-            public override void DoUpdate(GameTime gameTime)
+            public override void UpdateContainer(GameTime gameTime)
             {
                 UpdateHoverTimer(gameTime.ElapsedGameTime.TotalMilliseconds);
                 UpdateDropdownLocation();
@@ -137,7 +137,7 @@ namespace Blish_HUD.Extended
                 Dispose();
             }
 
-            protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
+            public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds) {
                 _dropdown.PaintDropdown(this, spriteBatch);
                 int index = 0;
                 foreach (var item in _dropdown._items.Keys) {

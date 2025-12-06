@@ -288,7 +288,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\Dropdown\IconDropdown[T].cs" />
-    <Compile Include="Controls\Dropdown\KeyValueDropdown[T].cs" />
+    <Compile Include="Controls\Dropdown\BaseDropdown[T].cs" />
     <Compile Include="Controls\Dropdown\TextDropdown[T].cs" />
     <Compile Include="Controls\ErrorPrompt.cs" />
     <Compile Include="EmbeddedResourceLoader.cs" />
