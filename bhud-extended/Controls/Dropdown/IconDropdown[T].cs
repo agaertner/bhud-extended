@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Blish_HUD.Extended
 {
-    public class IconDropdown<T> : KeyValueDropdown<T> {
+    public class IconDropdown<T> : BaseDropdown<T> {
 
         private readonly SortedList<T, AsyncTexture2D> _itemIcons;
 
@@ -150,7 +150,7 @@ namespace Blish_HUD.Extended
             return shrink;
         }
 
-        protected override void PaintDropdownItem(DropdownPanel panel, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
+        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
             var bounds = GetItemBounds(index);
             if (bounds == Rectangle.Empty) return;
 
@@ -159,14 +159,14 @@ namespace Blish_HUD.Extended
                 return;
             }
 
-            spriteBatch.DrawOnCtrl(panel, _textureEmptySlot, bounds, Color.White);
+            spriteBatch.DrawOnCtrl(menu, _textureEmptySlot, bounds, Color.White);
             var centered = GetInner(bounds).GetCenteredFit(icon.Bounds.Size);
-            spriteBatch.DrawOnCtrl(panel, icon, centered);
+            spriteBatch.DrawOnCtrl(menu, icon, centered);
 
             if (highlighted) {
-                spriteBatch.DrawRectangleOnCtrl(panel, bounds, BORDER_WIDTH, Color.White * 0.7f);
+                spriteBatch.DrawRectangleOnCtrl(menu, bounds, BORDER_WIDTH, Color.White * 0.7f);
             } else if (!this.HasSelected || !Equals(item, SelectedItem)) {
-                spriteBatch.DrawRectangleOnCtrl(panel, bounds, Color.Black * 0.4f);
+                spriteBatch.DrawRectangleOnCtrl(menu, bounds, Color.Black * 0.4f);
             }
         }
 
@@ -198,7 +198,7 @@ namespace Blish_HUD.Extended
             int totalWidth  = columns * maxIconSize.X + (columns - 1) * _iconPadding + 2 * _edgePadding;
             int totalHeight = rows    * maxIconSize.Y + (rows    - 1) * _iconPadding + 2 * _edgePadding;
 
-            return new Point(totalWidth, totalHeight);
+            return new Point(totalWidth, this.MaxMenuHeight > maxIconSize.Y + 2 * _edgePadding ? this.MaxMenuHeight : totalHeight); // No scrollbar (draw all items) if max menu height smaller than one row.
         }
     }
 }

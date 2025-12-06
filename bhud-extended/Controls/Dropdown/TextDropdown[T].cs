@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Blish_HUD.Extended
 {
-    public class TextDropdown<T> : KeyValueDropdown<T> {
+    public class TextDropdown<T> : BaseDropdown<T> {
 
         #region Load Static
 
@@ -72,7 +72,7 @@ namespace Blish_HUD.Extended
         }
 
         /// <summary>
-        /// Adds an item with an associated color to the dropdown.
+        /// Adds an item to the dropdown.
         /// </summary>
         /// <param name="value">Value of the item.</param>
         /// <param name="text">Displayed text.</param>
@@ -90,7 +90,7 @@ namespace Blish_HUD.Extended
         }
 
         /// <summary>
-        /// Adds an item with an associated color to the dropdown.
+        /// Adds an item with an associated text color to the dropdown.
         /// </summary>
         /// <param name="value">Value of the item.</param>
         /// <param name="text">Displayed text.</param>
@@ -199,20 +199,20 @@ namespace Blish_HUD.Extended
             }
         }
 
-        protected override void PaintDropdownItem(DropdownPanel panel, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
-            var itemBounds = new Rectangle(0, index * this.Height, panel.Width, this.Height);
+        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
+            var itemBounds = new Rectangle(0, index * this.Height, menu.Width, this.Height);
             if (highlighted) {
-                spriteBatch.DrawOnCtrl(panel, ContentService.Textures.Pixel,
+                spriteBatch.DrawOnCtrl(menu, ContentService.Textures.Pixel,
                                        new Rectangle(2, 2 + itemBounds.Y, this.Width - 4, itemBounds.Height - 4),
                                        new Color(45, 37, 25, 255));
-                spriteBatch.DrawStringOnCtrl(panel,
+                spriteBatch.DrawStringOnCtrl(menu,
                                              GetItemText(item),
                                              _font,
                                              new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
                                              _itemColors.TryGetValue(item, out var color) ?
                                                  color : ContentService.Colors.Chardonnay);
             } else {
-                spriteBatch.DrawStringOnCtrl(panel,
+                spriteBatch.DrawStringOnCtrl(menu,
                                              GetItemText(item),
                                              _font,
                                              new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
@@ -226,7 +226,7 @@ namespace Blish_HUD.Extended
         }
 
         protected override Point GetDropdownSize() {
-            return new Point(this.Width, this.Height * _itemTexts.Count);
+            return new Point(this.Width, this.MaxMenuHeight > this.Height ? this.MaxMenuHeight : this.Height * _itemTexts.Count); // No scrollbar (draw all items) if max menu height smaller than one row.
         }
     }
 }
