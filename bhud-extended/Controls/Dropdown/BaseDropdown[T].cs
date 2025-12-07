@@ -139,6 +139,11 @@ namespace Blish_HUD.Extended
 
             public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds) {
                 _dropdown.PaintDropdown(this, spriteBatch);
+                int index = 0;
+                foreach (var item in _dropdown._items.Keys) {
+                    _dropdown.PaintDropdownItem(this, spriteBatch, item, index, index == this.HighlightedItemIndex);
+                    index++;
+                }
             }
 
             protected override void DisposeControl()
@@ -333,6 +338,16 @@ namespace Blish_HUD.Extended
             // Border (1px thick around dropdown)
             spriteBatch.DrawRectangleOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), 1, Color.White * 0.5f);
         }
+
+        /// <summary>
+        /// Draws an individual item on the expanded <see cref="DropdownMenu"/>.
+        /// </summary>
+        /// <param name="menu">The expanded <see cref="DropdownMenu"/> to draw on.</param>
+        /// <param name="spriteBatch">The <see cref="SpriteBatch"/> to use for drawing.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="index">The index of the item.</param>
+        /// <param name="highlighted">If the mouse is currently hovering the item.</param>
+        protected abstract void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted);
 
         /// <summary>
         /// Returns the index of the item being hovered over given the mouse position relative to the expanded <see cref="DropdownMenu"/>, 

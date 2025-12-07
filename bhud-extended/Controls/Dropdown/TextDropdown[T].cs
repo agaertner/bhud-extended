@@ -220,6 +220,15 @@ namespace Blish_HUD.Extended
             }
         }
 
+        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
+            var itemBounds = new Rectangle(0, index * this.Height, menu.Width, this.Height);
+            if (highlighted) {
+                spriteBatch.DrawOnCtrl(menu, ContentService.Textures.Pixel,
+                                       new Rectangle(2, 2 + itemBounds.Y, this.Width - 4, itemBounds.Height - 4),
+                                       new Color(45, 37, 25, 255));
+            }
+        }
+
         protected override int GetHighlightedItemIndex(Point relativeMousePosition) {
             return relativeMousePosition.Y / this.Height;
         }

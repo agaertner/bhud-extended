@@ -198,6 +198,26 @@ namespace Blish_HUD.Extended
             return -1;
         }
 
+        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
+            var bounds = GetItemBounds(index);
+            if (bounds == Rectangle.Empty) return;
+
+            /*var icon = GetItemIcon(item);
+            if (icon == null || !icon.HasTexture) {
+                return;
+            }
+
+            spriteBatch.DrawOnCtrl(menu, _textureEmptySlot, bounds, Color.White);
+            var centered = GetInner(bounds).GetCenteredFit(icon.Bounds.Size);
+            spriteBatch.DrawOnCtrl(menu, icon, centered);*/
+
+            if (highlighted) {
+                spriteBatch.DrawRectangleOnCtrl(menu, bounds, BORDER_WIDTH, Color.White * 0.7f);
+            } else if (!this.HasSelected || !Equals(item, SelectedItem)) {
+                spriteBatch.DrawRectangleOnCtrl(menu, bounds, Color.Black * 0.4f);
+            }
+        }
+
         protected override Point GetDropdownSize() {
             if (_itemIcons.Count == 0 || _itemsPerRow <= 0) return Point.Zero;
 
