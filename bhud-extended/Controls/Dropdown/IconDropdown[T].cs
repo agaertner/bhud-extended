@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using Blish_HUD.Controls;
 
 namespace Blish_HUD.Extended
 {
@@ -85,6 +86,17 @@ namespace Blish_HUD.Extended
             AddItem(value, null, icon);
         }
 
+        protected override void OnDropdownMenuShown(DropdownMenu menu) {
+            var maxSize = GetMaxItemSize();
+            foreach (var items  in _itemIcons) {
+                _ = new Image {
+                    Parent  = menu,
+                    Size    = maxSize,
+                    Texture = items.Value
+                };
+            }
+        }
+
         protected override void OnItemRemoved(T item) {
             if (_itemIcons.TryGetValue(item, out var icon)) { 
                 icon?.Dispose();
@@ -148,26 +160,6 @@ namespace Blish_HUD.Extended
             var shrink = bounds;
             shrink.Inflate(-7, -7);
             return shrink;
-        }
-
-        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
-            var bounds = GetItemBounds(index);
-            if (bounds == Rectangle.Empty) return;
-
-            var icon = GetItemIcon(item);
-            if (icon == null || !icon.HasTexture) {
-                return;
-            }
-
-            spriteBatch.DrawOnCtrl(menu, _textureEmptySlot, bounds, Color.White);
-            var centered = GetInner(bounds).GetCenteredFit(icon.Bounds.Size);
-            spriteBatch.DrawOnCtrl(menu, icon, centered);
-
-            if (highlighted) {
-                spriteBatch.DrawRectangleOnCtrl(menu, bounds, BORDER_WIDTH, Color.White * 0.7f);
-            } else if (!this.HasSelected || !Equals(item, SelectedItem)) {
-                spriteBatch.DrawRectangleOnCtrl(menu, bounds, Color.Black * 0.4f);
-            }
         }
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {

@@ -100,6 +100,27 @@ namespace Blish_HUD.Extended
             AddItem(value, text, null, color);
         }
 
+        protected override void OnDropdownMenuShown(DropdownMenu menu) {
+            menu.FlowDirection = ControlFlowDirection.SingleTopToBottom;
+
+            foreach (var items in _itemTexts) {
+                _ = new Label {
+                    Parent = menu,
+                    Width = this.Width,
+                    Height = this.Height,
+                    Text = items.Value,
+                    Font = this.Font,
+                    TextColor = GetItemColor(items.Key)
+                };
+                //TODO: When FormattedLabelBuilder supports changing Font, use it.
+                /*var label = new FormattedLabelBuilder()
+                           .SetWidth(this.Width)
+                           .SetHeight(this.Height)
+                           .CreatePart(text, p => {
+                }).Build();*/
+            }
+        }
+
         protected override void OnItemRemoved(T value) {
             _itemTexts.Remove(value);
             _itemColors.Remove(value);
@@ -196,28 +217,6 @@ namespace Blish_HUD.Extended
                                              (this.Enabled
                                                   ? _selectedItemColor
                                                   : Control.StandardColors.DisabledText));
-            }
-        }
-
-        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
-            var itemBounds = new Rectangle(0, index * this.Height, menu.Width, this.Height);
-            if (highlighted) {
-                spriteBatch.DrawOnCtrl(menu, ContentService.Textures.Pixel,
-                                       new Rectangle(2, 2 + itemBounds.Y, this.Width - 4, itemBounds.Height - 4),
-                                       new Color(45, 37, 25, 255));
-                spriteBatch.DrawStringOnCtrl(menu,
-                                             GetItemText(item),
-                                             _font,
-                                             new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
-                                             _itemColors.TryGetValue(item, out var color) ?
-                                                 color : ContentService.Colors.Chardonnay);
-            } else {
-                spriteBatch.DrawStringOnCtrl(menu,
-                                             GetItemText(item),
-                                             _font,
-                                             new Rectangle(6, itemBounds.Y, itemBounds.Width - 13 - _textureArrow.Width, itemBounds.Height),
-                                             _itemColors.TryGetValue(item, out var color) ?
-                                                 color * 0.95f : _defaultColor);
             }
         }
 
