@@ -16,22 +16,6 @@ namespace Blish_HUD.Extended
             return shrink;
         }
 
-        private sealed class ImageSlot : Image {
-            private IconDropdown<T> _dropdown;
-            public ImageSlot(IconDropdown<T> assocDropdown) {
-                _dropdown = assocDropdown;
-            }
-
-            protected override CaptureType CapturesInput() {
-                return CaptureType.Filter;
-            }
-
-            protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
-                spriteBatch.DrawOnCtrl(this, _dropdown._textureEmptySlot, bounds, Color.White); 
-                base.Paint(spriteBatch, GetInner(bounds).GetCenteredFit(_texture.Bounds.Size));
-            }
-        }
-
         private readonly SortedList<T, AsyncTexture2D> _itemIcons;
 
         private AsyncTexture2D _selectedItemIcon;
@@ -47,28 +31,11 @@ namespace Blish_HUD.Extended
                 }
             }
         }
-        private int _iconPadding = 2;
-        public int IconPadding {
-            get => _iconPadding;
-            set {
-                if (SetProperty(ref _iconPadding, value)) {
-                    Invalidate();
-                }
-            }
-        }
-
-        private int _edgePadding = 8;
-        public  int EdgePadding { get => _edgePadding;
-            set {
-                if (SetProperty(ref _edgePadding, value)) {
-                    Invalidate();
-                }
-            }
-        }
 
         private readonly Texture2D _textureEmptySlot;
 
-        public IconDropdown() {
+        public IconDropdown() { 
+            this.Spacing      = 2;
             _itemIcons        = new SortedList<T, AsyncTexture2D>();
             _textureEmptySlot = EmbeddedResourceLoader.LoadTexture("156900.png");
         }
@@ -110,17 +77,8 @@ namespace Blish_HUD.Extended
         }
 
         protected override void OnDropdownMenuShown(DropdownMenu menu) {
-            menu.FlowDirection       = ControlFlowDirection.LeftToRight;
-            menu.OuterControlPadding = new Vector2(_edgePadding, _edgePadding);
-            menu.ControlPadding      = new Vector2(_iconPadding, _iconPadding);
-            var maxSize = GetMaxItemSize();
-            foreach (var items  in _itemIcons) {
-                _ = new ImageSlot(this) {
-                    Parent  = menu,
-                    Size    = maxSize,
-                    Texture = items.Value
-                };
-            }
+            menu.FlowDirection = ControlFlowDirection.LeftToRight;
+            base.OnDropdownMenuShown(menu);
         }
 
         protected override void OnItemRemoved(T item) {
@@ -166,21 +124,6 @@ namespace Blish_HUD.Extended
             return new Point(maxIconWidth, maxIconHeight);
         }
 
-        private Rectangle GetItemBounds(int index, int scrolloffsetX, int scrolloffsetY) {
-            int col = index % _itemsPerRow;
-            int row = index / _itemsPerRow;
-
-            var maxIconSize  = GetMaxItemSize();
-
-            int paddedWidth  = maxIconSize.X + _iconPadding;
-            int paddedHeight = maxIconSize.Y + _iconPadding;
-
-            int x = _edgePadding + col * paddedWidth  - scrolloffsetX;
-            int y = _edgePadding + row * paddedHeight - scrolloffsetY;
-
-            return new Rectangle(x, y, maxIconSize.X, maxIconSize.Y);
-        }
-
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
             spriteBatch.DrawOnCtrl(this, _textureEmptySlot, bounds, Color.White);
             if (_selectedItemIcon != null && _selectedItemIcon.HasTexture) {
@@ -188,33 +131,22 @@ namespace Blish_HUD.Extended
             }
         }
 
-        protected override int GetHighlightedItemIndex(DropdownMenu menu) {
-            for (int i = 0; i < _itemIcons.Count; i++) {
-                var bounds = GetItemBounds(i, menu.HorizontalScrollOffset, menu.VerticalScrollOffset);
-                if (bounds.Contains(menu.RelativeMousePosition)) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
-            var bounds = GetItemBounds(index, menu.HorizontalScrollOffset, menu.VerticalScrollOffset);
-            if (bounds == Rectangle.Empty) return;
-
-            /*var icon = GetItemIcon(item);
+        protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds, bool highlighted) {
+            var icon = GetItemIcon(ctrl.Item);
             if (icon == null || !icon.HasTexture) {
                 return;
             }
 
-            spriteBatch.DrawOnCtrl(menu, _textureEmptySlot, bounds, Color.White);
+            ctrl.Size = GetMaxItemSize();
+
+            spriteBatch.DrawOnCtrl(ctrl, _textureEmptySlot, bounds, Color.White);
             var centered = GetInner(bounds).GetCenteredFit(icon.Bounds.Size);
-            spriteBatch.DrawOnCtrl(menu, icon, centered);*/
+            spriteBatch.DrawOnCtrl(ctrl, icon, centered);
 
             if (highlighted) {
-                spriteBatch.DrawRectangleOnCtrl(menu, bounds, BORDER_WIDTH, Color.White * 0.7f);
-            } else if (!this.HasSelected || !Equals(item, SelectedItem)) {
-                spriteBatch.DrawRectangleOnCtrl(menu, bounds, Color.Black * 0.4f);
+                spriteBatch.DrawRectangleOnCtrl(ctrl, bounds, BORDER_WIDTH, Color.White * 0.7f);
+            } else if (!this.HasSelected || !Equals(ctrl.Item, SelectedItem)) {
+                spriteBatch.DrawRectangleOnCtrl(ctrl, bounds, Color.Black * 0.4f);
             }
         }
 
@@ -226,10 +158,10 @@ namespace Blish_HUD.Extended
             int columns  = Math.Min(_itemsPerRow, _itemIcons.Count);
             int rows = (_itemIcons.Count + _itemsPerRow - 1) / _itemsPerRow;
 
-            int totalWidth  = columns * maxIconSize.X + (columns - 1) * _iconPadding + 2 * _edgePadding;
-            int totalHeight = rows    * maxIconSize.Y + (rows    - 1) * _iconPadding + 2 * _edgePadding;
+            int totalWidth  = columns * maxIconSize.X + (columns - 1) * this.Spacing + 2 * this.Margin;
+            int totalHeight = rows    * maxIconSize.Y + (rows    - 1) * this.Spacing + 2 * this.Margin;
 
-            return new Point(totalWidth, this.MenuHeight > maxIconSize.Y + 2 * _edgePadding ? this.MenuHeight : totalHeight); // No scrollbar (draw all items) if max menu height smaller than one row.
+            return new Point(totalWidth, this.MenuHeight > maxIconSize.Y + 2 * this.Margin ? this.MenuHeight : totalHeight); // No scrollbar (draw all items) if max menu height smaller than one row.
         }
     }
 }

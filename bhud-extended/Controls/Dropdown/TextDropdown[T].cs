@@ -27,6 +27,8 @@ namespace Blish_HUD.Extended
         private readonly Color  _defaultColor;
         private readonly Color  _placeholderColor;
 
+        private const int BORDER_WIDTH = 2;
+
         private string _placeholderText;
         public string PlaceholderText {
             get => _placeholderText;
@@ -60,7 +62,7 @@ namespace Blish_HUD.Extended
             }
         }
 
-        public TextDropdown() {
+        public TextDropdown() { 
             _itemTexts         = new SortedList<T, string>();
             _itemColors        = new SortedList<T, Color>();
             _placeholderText   = string.Empty;
@@ -101,24 +103,9 @@ namespace Blish_HUD.Extended
         }
 
         protected override void OnDropdownMenuShown(DropdownMenu menu) {
-            menu.FlowDirection = ControlFlowDirection.SingleTopToBottom;
-
-            foreach (var items in _itemTexts) {
-                var label = new Label {
-                    Parent = menu,
-                    Width = this.Width,
-                    Height = this.Height,
-                    Text = items.Value,
-                    Font = this.Font,
-                    TextColor = GetItemColor(items.Key)
-                };
-                //TODO: When FormattedLabelBuilder supports changing Font, use it.
-                /*var label = new FormattedLabelBuilder()
-                           .SetWidth(this.Width)
-                           .SetHeight(this.Height)
-                           .CreatePart(text, p => {
-                }).Build();*/
-            }
+            base.OnDropdownMenuShown(menu);
+            menu.FlowDirection       = ControlFlowDirection.SingleTopToBottom;
+            menu.OuterControlPadding = Vector2.Zero; // The margin is added in PaintDropdownItem to stretch the highlight across the item.
         }
 
         protected override void OnItemRemoved(T value) {
@@ -220,18 +207,24 @@ namespace Blish_HUD.Extended
             }
         }
 
-        protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
-            var itemBounds = new Rectangle(0, index * this.Height, menu.Width, this.Height);
+        protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds, bool highlighted) {
+            ctrl.Size = new Point(this.Width, this.Height);
             if (highlighted) {
-                spriteBatch.DrawOnCtrl(menu, ContentService.Textures.Pixel,
-                                       new Rectangle(2, 2 + itemBounds.Y, this.Width - 4, itemBounds.Height - 4),
+                spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel,
+                                       new Rectangle(bounds.X + BORDER_WIDTH, bounds.Y + BORDER_WIDTH, bounds.Width - 2 * BORDER_WIDTH, bounds.Height - 2 * BORDER_WIDTH),
                                        new Color(45, 37, 25, 255));
+                spriteBatch.DrawStringOnCtrl(ctrl,
+                                             GetItemText(ctrl.Item),
+                                             _font,
+                                             new Rectangle(this.Margin, bounds.Y, bounds.Width - this.Margin, bounds.Height),
+                                             _itemColors.TryGetValue(ctrl.Item, out var color) ? color : ContentService.Colors.Chardonnay);
+            } else {
+                spriteBatch.DrawStringOnCtrl(ctrl,
+                                             GetItemText(ctrl.Item),
+                                             _font,
+                                             new Rectangle(this.Margin, bounds.Y, bounds.Width - this.Margin, bounds.Height),
+                                             _itemColors.TryGetValue(ctrl.Item, out var color) ? color * 0.95f : _defaultColor);
             }
-        }
-
-        protected override int GetHighlightedItemIndex(DropdownMenu menu) {
-            int adjustedY = menu.RelativeMousePosition.Y - menu.VerticalScrollOffset;
-            return adjustedY / this.Height;
         }
 
         protected override Point GetDropdownSize() {

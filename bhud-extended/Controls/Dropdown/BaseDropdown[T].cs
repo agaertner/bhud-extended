@@ -4,26 +4,50 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 namespace Blish_HUD.Extended
 {
     public abstract class BaseDropdown<T> : Control
     {
         protected sealed class DropdownMenu : FlowPanel
         {
-            private const int TOOLTIP_HOVER_DELAY = 800;
+            private const int TOOLTIP_HOVER_DELAY    = 800;
             private const int SCROLL_CLOSE_THRESHOLD = 20;
+
+            public sealed class DropdownItem : Control {
+                public T Item => _item.Key;
+                private readonly KeyValuePair<T, Func<string>> _item;
+                public readonly DropdownMenu _menu;
+                public DropdownItem(DropdownMenu assocMenu, KeyValuePair<T, Func<string>> item) {
+                    Parent = assocMenu;
+                    _menu  = assocMenu;
+                    _item = item;
+                }
+
+                protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
+                    _menu._dropdown.PaintDropdownItem(this, spriteBatch, bounds, this.MouseOver);
+                }
+
+                protected override CaptureType CapturesInput() {
+                    return CaptureType.Filter;
+                }
+
+                public override void DoUpdate(GameTime gameTime) {
+                    if (this.MouseOver) {
+                        _menu.HoveredItem = _item.Key;
+                    }
+                }
+            }
 
             private BaseDropdown<T> _dropdown;
 
-            private int _highlightedItemIndex = -1;
+            private T _hoveredItem;
 
-            private int HighlightedItemIndex
+            private T HoveredItem
             {
-                get => _highlightedItemIndex;
+                get => _hoveredItem;
                 set
                 {
-                    if (SetProperty(ref _highlightedItemIndex, value))
+                    if (SetProperty(ref _hoveredItem, value))
                     {
                         _hoverTime = 0;
                     }
@@ -40,10 +64,13 @@ namespace Blish_HUD.Extended
                 _size      = _dropdown.GetDropdownSize();
                 _location  = GetPanelLocation();
                 _zIndex    = Screen.TOOLTIP_BASEZINDEX;
-                _canScroll = true;
                 _startTop  = _location.Y;
 
-                this.Parent = Graphics.SpriteScreen;
+                _canScroll           = true;
+                _outerControlPadding = new Vector2(_dropdown.Margin, _dropdown.Margin);
+                _controlPadding      = new Vector2(_dropdown.Spacing,_dropdown.Spacing);
+
+                this.Parent               = Graphics.SpriteScreen;
 
                 Input.Mouse.LeftMouseButtonPressed += InputOnMousedOffDropdownPanel;
                 Input.Mouse.RightMouseButtonPressed += InputOnMousedOffDropdownPanel;
@@ -84,19 +111,6 @@ namespace Blish_HUD.Extended
                 }
             }
 
-            protected override void OnMouseMoved(MouseEventArgs e)
-            {
-                this.HighlightedItemIndex = _dropdown.GetHighlightedItemIndex(this);
-                base.OnMouseMoved(e);
-            }
-
-            private KeyValuePair<T, Func<string>> GetActiveItem()
-            {
-                return _highlightedItemIndex > 0 && _highlightedItemIndex < _dropdown._items.Count 
-                           ? _dropdown._items.ElementAt(_highlightedItemIndex) 
-                           : default;
-            }
-
             private void UpdateHoverTimer(double elapsedMilliseconds)
             {
                 if (_mouseOver)
@@ -107,9 +121,12 @@ namespace Blish_HUD.Extended
                 {
                     _hoverTime = 0;
                 }
-                this.BasicTooltipText = _hoverTime > TOOLTIP_HOVER_DELAY 
-                                            ? GetActiveItem().Value?.Invoke() 
-                                            : string.Empty;
+
+                if (_hoverTime > TOOLTIP_HOVER_DELAY && _dropdown._items.TryGetValue(_hoveredItem, out var func)) {
+                    this.BasicTooltipText = func?.Invoke();
+                } else {
+                    this.BasicTooltipText = string.Empty;
+                }
             }
 
             private void UpdateDropdownLocation()
@@ -130,20 +147,13 @@ namespace Blish_HUD.Extended
 
             protected override void OnClick(MouseEventArgs e)
             { 
-                if (this.HighlightedItemIndex >= 0 && this.HighlightedItemIndex < _dropdown._items.Count) { 
-                    _dropdown.SelectedItem = _dropdown._items.ElementAt(this.HighlightedItemIndex).Key;
-                }
+                _dropdown.SelectedItem = _hoveredItem;
                 base.OnClick(e);
                 Dispose();
             }
 
             public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds) {
                 _dropdown.PaintDropdown(this, spriteBatch);
-                int index = 0;
-                foreach (var item in _dropdown._items.Keys) {
-                    _dropdown.PaintDropdownItem(this, spriteBatch, item, index, index == this.HighlightedItemIndex);
-                    index++;
-                }
             }
 
             protected override void DisposeControl()
@@ -187,6 +197,9 @@ namespace Blish_HUD.Extended
         }
 
         private Point _menuSize = Point.Zero;
+        /// <summary>
+        /// Controls the size of the expanded <see cref="DropdownMenu"/>.
+        /// </summary>
         public Point MenuSize {
             get => _menuSize;
             set {
@@ -199,6 +212,9 @@ namespace Blish_HUD.Extended
             }
         }
 
+        /// <summary>
+        /// Controls the height of the expanded <see cref="DropdownMenu"/>.
+        /// </summary>
         public int MenuHeight {
             get => _menuSize.Y;
             set {
@@ -207,6 +223,9 @@ namespace Blish_HUD.Extended
             }
         }
 
+        /// <summary>
+        /// Controls the width of the expanded <see cref="DropdownMenu"/>.
+        /// </summary>
         public int MenuWidth {
             get => _menuSize.X;
             set {
@@ -215,10 +234,39 @@ namespace Blish_HUD.Extended
             }
         }
 
+        private int _spacing;
+        /// <summary>
+        /// Controls the spacing between items in the expanded <see cref="DropdownMenu"/>.
+        /// </summary>
+        public int Spacing {
+            get => _spacing;
+            set {
+                if (SetProperty(ref _spacing, value)) {
+                    Invalidate();
+                }
+            }
+        }
+
+        private int _margin = 6;
+        /// <summary>
+        /// Controls the space around the items in the expanded <see cref="DropdownMenu"/>.
+        /// </summary>
+        public int Margin {
+            get => _margin;
+            set {
+                if (SetProperty(ref _margin, value)) {
+                    Invalidate();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Control variable.
+        /// </summary>
         protected bool HasSelected { get; private set; }
 
         private DropdownMenu _menu;
-        private bool _hadPanel;
+        private bool         _hadPanel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Dropdown"/> class.
@@ -342,21 +390,11 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Draws an individual item on the expanded <see cref="DropdownMenu"/>.
         /// </summary>
-        /// <param name="menu">The expanded <see cref="DropdownMenu"/> to draw on.</param>
+        /// <param name="ctrl">The expanded <see cref="DropdownMenu.DropdownItem"/> to draw on.</param>
         /// <param name="spriteBatch">The <see cref="SpriteBatch"/> to use for drawing.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="index">The index of the item.</param>
+        /// <param name="bounds">The bounds of the item.</param>
         /// <param name="highlighted">If the mouse is currently hovering the item.</param>
-        protected abstract void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted);
-
-        /// <summary>
-        /// Returns the index of the item being hovered over given the mouse position relative to the expanded <see cref="DropdownMenu"/>, 
-        /// </summary>
-        /// <param name="menu">The expanded <see cref="DropdownMenu"/>.</param>
-        /// <returns>Index of the hovered item.</returns>
-        protected virtual int GetHighlightedItemIndex(DropdownMenu menu) {
-            return -1;
-        }
+        protected abstract void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds, bool highlighted);
 
         /// <summary>
         /// Returns the size of the expanded <see cref="DropdownMenu"/>.
@@ -371,7 +409,9 @@ namespace Blish_HUD.Extended
         /// </summary>
         /// <param name="menu">The expanded <see cref="DropdownMenu"/>.</param>
         protected virtual void OnDropdownMenuShown(DropdownMenu menu) {
-            /* NOOP */
+            foreach (KeyValuePair<T, Func<string>> item in _items) {
+                _ = new DropdownMenu.DropdownItem(menu, item);
+            }
         }
 
         /// <summary>
