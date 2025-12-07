@@ -21,6 +21,11 @@ namespace Blish_HUD.Extended
             public ImageSlot(IconDropdown<T> assocDropdown) {
                 _dropdown = assocDropdown;
             }
+
+            protected override CaptureType CapturesInput() {
+                return CaptureType.Filter;
+            }
+
             protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
                 spriteBatch.DrawOnCtrl(this, _dropdown._textureEmptySlot, bounds, Color.White); 
                 base.Paint(spriteBatch, GetInner(bounds).GetCenteredFit(_texture.Bounds.Size));
