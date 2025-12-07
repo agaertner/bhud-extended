@@ -1,13 +1,31 @@
 ﻿using Blish_HUD.Content;
+using Blish_HUD.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using Blish_HUD.Controls;
 
 namespace Blish_HUD.Extended
 {
     public class IconDropdown<T> : BaseDropdown<T> {
+
+        private static Rectangle GetInner(Rectangle bounds) {
+            // Returns the "visual" inner frame of the empty slot texture.
+            var shrink = bounds;
+            shrink.Inflate(-7, -7);
+            return shrink;
+        }
+
+        private sealed class ImageSlot : Image {
+            private IconDropdown<T> _dropdown;
+            public ImageSlot(IconDropdown<T> assocDropdown) {
+                _dropdown = assocDropdown;
+            }
+            protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
+                spriteBatch.DrawOnCtrl(this, _dropdown._textureEmptySlot, bounds, Color.White); 
+                base.Paint(spriteBatch, GetInner(bounds).GetCenteredFit(_texture.Bounds.Size));
+            }
+        }
 
         private readonly SortedList<T, AsyncTexture2D> _itemIcons;
 
@@ -87,9 +105,12 @@ namespace Blish_HUD.Extended
         }
 
         protected override void OnDropdownMenuShown(DropdownMenu menu) {
+            menu.FlowDirection       = ControlFlowDirection.LeftToRight;
+            menu.OuterControlPadding = new Vector2(_edgePadding, _edgePadding);
+            menu.ControlPadding      = new Vector2(_iconPadding, _iconPadding);
             var maxSize = GetMaxItemSize();
             foreach (var items  in _itemIcons) {
-                _ = new Image {
+                _ = new ImageSlot(this) {
                     Parent  = menu,
                     Size    = maxSize,
                     Texture = items.Value
@@ -153,13 +174,6 @@ namespace Blish_HUD.Extended
             int y = _edgePadding + row * paddedHeight;
 
             return new Rectangle(x, y, maxIconSize.X, maxIconSize.Y);
-        }
-
-        private Rectangle GetInner(Rectangle bounds) {
-            // Returns the "visual" inner frame of the empty slot texture.
-            var shrink = bounds;
-            shrink.Inflate(-7, -7);
-            return shrink;
         }
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
