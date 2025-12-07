@@ -86,7 +86,7 @@ namespace Blish_HUD.Extended
 
             protected override void OnMouseMoved(MouseEventArgs e)
             {
-                this.HighlightedItemIndex = _dropdown.GetHighlightedItemIndex(this.RelativeMousePosition);
+                this.HighlightedItemIndex = _dropdown.GetHighlightedItemIndex(this);
                 base.OnMouseMoved(e);
             }
 
