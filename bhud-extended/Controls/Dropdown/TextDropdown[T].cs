@@ -207,9 +207,9 @@ namespace Blish_HUD.Extended
             }
         }
 
-        protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds, bool highlighted) {
+        protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds) {
             ctrl.Size = new Point(this.Width, this.Height);
-            if (highlighted) {
+            if (ctrl.MouseOver) {
                 spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel,
                                        new Rectangle(bounds.X + BORDER_WIDTH, bounds.Y + BORDER_WIDTH, bounds.Width - 2 * BORDER_WIDTH, bounds.Height - 2 * BORDER_WIDTH),
                                        new Color(45, 37, 25, 255));

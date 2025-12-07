@@ -24,7 +24,7 @@ namespace Blish_HUD.Extended
                 }
 
                 protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
-                    _menu._dropdown.PaintDropdownItem(this, spriteBatch, bounds, this.MouseOver);
+                    _menu._dropdown.PaintDropdownItem(this, spriteBatch, bounds);
                 }
 
                 protected override CaptureType CapturesInput() {
@@ -393,8 +393,7 @@ namespace Blish_HUD.Extended
         /// <param name="ctrl">The expanded <see cref="DropdownMenu.DropdownItem"/> to draw on.</param>
         /// <param name="spriteBatch">The <see cref="SpriteBatch"/> to use for drawing.</param>
         /// <param name="bounds">The bounds of the item.</param>
-        /// <param name="highlighted">If the mouse is currently hovering the item.</param>
-        protected abstract void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds, bool highlighted);
+        protected abstract void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds);
 
         /// <summary>
         /// Returns the size of the expanded <see cref="DropdownMenu"/>.

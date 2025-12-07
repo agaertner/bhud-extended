@@ -131,7 +131,7 @@ namespace Blish_HUD.Extended
             }
         }
 
-        protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds, bool highlighted) {
+        protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds) {
             var icon = GetItemIcon(ctrl.Item);
             if (icon == null || !icon.HasTexture) {
                 return;
@@ -143,7 +143,7 @@ namespace Blish_HUD.Extended
             var centered = GetInner(bounds).GetCenteredFit(icon.Bounds.Size);
             spriteBatch.DrawOnCtrl(ctrl, icon, centered);
 
-            if (highlighted) {
+            if (ctrl.MouseOver) {
                 spriteBatch.DrawRectangleOnCtrl(ctrl, bounds, BORDER_WIDTH, Color.White * 0.7f);
             } else if (!this.HasSelected || !Equals(ctrl.Item, SelectedItem)) {
                 spriteBatch.DrawRectangleOnCtrl(ctrl, bounds, Color.Black * 0.4f);
