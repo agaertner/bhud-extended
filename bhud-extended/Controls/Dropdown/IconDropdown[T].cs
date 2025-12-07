@@ -166,7 +166,7 @@ namespace Blish_HUD.Extended
             return new Point(maxIconWidth, maxIconHeight);
         }
 
-        private Rectangle GetItemBounds(int index) {
+        private Rectangle GetItemBounds(int index, int scrolloffsetX, int scrolloffsetY) {
             int col = index % _itemsPerRow;
             int row = index / _itemsPerRow;
 
@@ -175,8 +175,8 @@ namespace Blish_HUD.Extended
             int paddedWidth  = maxIconSize.X + _iconPadding;
             int paddedHeight = maxIconSize.Y + _iconPadding;
 
-            int x = _edgePadding + col * paddedWidth;
-            int y = _edgePadding + row * paddedHeight;
+            int x = _edgePadding + col * paddedWidth  - scrolloffsetX;
+            int y = _edgePadding + row * paddedHeight - scrolloffsetY;
 
             return new Rectangle(x, y, maxIconSize.X, maxIconSize.Y);
         }
@@ -188,10 +188,10 @@ namespace Blish_HUD.Extended
             }
         }
 
-        protected override int GetHighlightedItemIndex(Point relativeMousePosition) {
+        protected override int GetHighlightedItemIndex(DropdownMenu menu) {
             for (int i = 0; i < _itemIcons.Count; i++) {
-                var bounds = GetItemBounds(i);
-                if (bounds.Contains(relativeMousePosition)) {
+                var bounds = GetItemBounds(i, menu.HorizontalScrollOffset, menu.VerticalScrollOffset);
+                if (bounds.Contains(menu.RelativeMousePosition)) {
                     return i;
                 }
             }
@@ -199,7 +199,7 @@ namespace Blish_HUD.Extended
         }
 
         protected override void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted) {
-            var bounds = GetItemBounds(index);
+            var bounds = GetItemBounds(index, menu.HorizontalScrollOffset, menu.VerticalScrollOffset);
             if (bounds == Rectangle.Empty) return;
 
             /*var icon = GetItemIcon(item);

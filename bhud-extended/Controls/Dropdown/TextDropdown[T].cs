@@ -229,8 +229,9 @@ namespace Blish_HUD.Extended
             }
         }
 
-        protected override int GetHighlightedItemIndex(Point relativeMousePosition) {
-            return relativeMousePosition.Y / this.Height;
+        protected override int GetHighlightedItemIndex(DropdownMenu menu) {
+            int adjustedY = menu.RelativeMousePosition.Y + menu.VerticalScrollOffset;
+            return adjustedY / this.Height;
         }
 
         protected override Point GetDropdownSize() {

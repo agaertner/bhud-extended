@@ -352,9 +352,9 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Returns the index of the item being hovered over given the mouse position relative to the expanded <see cref="DropdownMenu"/>, 
         /// </summary>
-        /// <param name="relativeMousePosition">Mouse position relative to the expanded <see cref="DropdownMenu"/>.</param>
+        /// <param name="menu">The expanded <see cref="DropdownMenu"/>.</param>
         /// <returns>Index of the hovered item.</returns>
-        protected virtual int GetHighlightedItemIndex(Point relativeMousePosition) {
+        protected virtual int GetHighlightedItemIndex(DropdownMenu menu) {
             return -1;
         }
 
