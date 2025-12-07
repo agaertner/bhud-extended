@@ -104,7 +104,7 @@ namespace Blish_HUD.Extended
             menu.FlowDirection = ControlFlowDirection.SingleTopToBottom;
 
             foreach (var items in _itemTexts) {
-                _ = new Label {
+                var label = new Label {
                     Parent = menu,
                     Width = this.Width,
                     Height = this.Height,
@@ -230,7 +230,7 @@ namespace Blish_HUD.Extended
         }
 
         protected override int GetHighlightedItemIndex(DropdownMenu menu) {
-            int adjustedY = menu.RelativeMousePosition.Y + menu.VerticalScrollOffset;
+            int adjustedY = menu.RelativeMousePosition.Y - menu.VerticalScrollOffset;
             return adjustedY / this.Height;
         }
 
