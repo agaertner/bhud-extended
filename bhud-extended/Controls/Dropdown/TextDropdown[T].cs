@@ -226,7 +226,8 @@ namespace Blish_HUD.Extended
         }
 
         protected override Point GetDropdownSize() {
-            return new Point(this.Width, this.MaxMenuHeight > this.Height ? this.MaxMenuHeight : this.Height * _itemTexts.Count); // No scrollbar (draw all items) if max menu height smaller than one row.
+            return new Point(this.Width, this.MenuHeight > this.Height ? this.MenuHeight : this.Height * _itemTexts.Count); // No scrollbar (draw all items) if max menu height smaller than one row.
         }
+
     }
 }

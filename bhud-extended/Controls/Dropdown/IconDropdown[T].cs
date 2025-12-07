@@ -198,7 +198,7 @@ namespace Blish_HUD.Extended
             int totalWidth  = columns * maxIconSize.X + (columns - 1) * _iconPadding + 2 * _edgePadding;
             int totalHeight = rows    * maxIconSize.Y + (rows    - 1) * _iconPadding + 2 * _edgePadding;
 
-            return new Point(totalWidth, this.MaxMenuHeight > maxIconSize.Y + 2 * _edgePadding ? this.MaxMenuHeight : totalHeight); // No scrollbar (draw all items) if max menu height smaller than one row.
+            return new Point(totalWidth, this.MenuHeight > maxIconSize.Y + 2 * _edgePadding ? this.MenuHeight : totalHeight); // No scrollbar (draw all items) if max menu height smaller than one row.
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Blish_HUD.Extended
 {
     public abstract class BaseDropdown<T> : Control
     {
-        protected sealed class DropdownMenu : Panel
+        protected sealed class DropdownMenu : Control
         {
             private const int TOOLTIP_HOVER_DELAY = 800;
             private const int SCROLL_CLOSE_THRESHOLD = 20;
@@ -40,7 +40,6 @@ namespace Blish_HUD.Extended
                 _size      = _dropdown.GetDropdownSize();
                 _location  = GetPanelLocation();
                 _zIndex    = Screen.TOOLTIP_BASEZINDEX;
-                _canScroll = true;
                 _startTop  = _location.Y;
 
                 this.Parent = Graphics.SpriteScreen;
@@ -122,7 +121,7 @@ namespace Blish_HUD.Extended
                 }
             }
 
-            public override void UpdateContainer(GameTime gameTime)
+            public override void DoUpdate(GameTime gameTime)
             {
                 UpdateHoverTimer(gameTime.ElapsedGameTime.TotalMilliseconds);
                 UpdateDropdownLocation();
@@ -137,7 +136,7 @@ namespace Blish_HUD.Extended
                 Dispose();
             }
 
-            public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds) {
+            protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
                 _dropdown.PaintDropdown(this, spriteBatch);
                 int index = 0;
                 foreach (var item in _dropdown._items.Keys) {
@@ -186,13 +185,32 @@ namespace Blish_HUD.Extended
             }
         }
 
-        private int _maxMenuHeight;
-        public int MaxMenuHeight {
-            get => _maxMenuHeight;
+        private Point _menuSize = Point.Zero;
+        public Point MenuSize {
+            get => _menuSize;
             set {
-                if (SetProperty(ref _maxMenuHeight, value)) {
-                    /* NOOP */
-                }
+                if (_menuSize == value || value.X < 0 || value.Y < 0) return;
+                var menuSize = _menuSize;
+                _menuSize = value; 
+                OnPropertyChanged();
+                if (menuSize.Y != _menuSize.Y) OnPropertyChanged(nameof(MenuHeight), false);
+                if (menuSize.X != _menuSize.X) OnPropertyChanged(nameof(MenuWidth), false);
+            }
+        }
+
+        public int MenuHeight {
+            get => _menuSize.Y;
+            set {
+                if (_menuSize.Y == value) return;
+                this.MenuSize = new Point(_menuSize.X, value);
+            }
+        }
+
+        public int MenuWidth {
+            get => _menuSize.X;
+            set {
+                if (_menuSize.X == value) return;
+                this.MenuSize = new Point(value, _menuSize.Y);
             }
         }
 
@@ -254,6 +272,7 @@ namespace Blish_HUD.Extended
         public void HideDropdownPanel()
         {
             _hadPanel = _mouseOver;
+            OnDropdownMenuClosed(_menu);
             _menu?.Dispose();
         }
 
@@ -269,6 +288,7 @@ namespace Blish_HUD.Extended
             if (_menu == null && !_hadPanel)
             {
                 _menu = DropdownMenu.ShowPanel(this);
+                OnDropdownMenuShown(_menu);
             }
             else
             {
@@ -309,8 +329,8 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Draws the background of the expanded <see cref="DropdownMenu"/>.
         /// </summary>
-        /// <param name="menu">The expanded <seealso cref="DropdownMenu"/> to draw on.</param>
-        /// <param name="spriteBatch">The <seealso cref="SpriteBatch"/> to use for drawing.</param>
+        /// <param name="menu">The expanded <see cref="DropdownMenu"/> to draw on.</param>
+        /// <param name="spriteBatch">The <see cref="SpriteBatch"/> to use for drawing.</param>
         protected virtual void PaintDropdown(DropdownMenu menu, SpriteBatch spriteBatch) {
             spriteBatch.DrawRectangleOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), Color.Black);
 
@@ -321,24 +341,45 @@ namespace Blish_HUD.Extended
         /// <summary>
         /// Draws an individual item on the expanded <see cref="DropdownMenu"/>.
         /// </summary>
-        /// <param name="menu">The expanded <seealso cref="DropdownMenu"/> to draw on.</param>
-        /// <param name="spriteBatch">The <seealso cref="SpriteBatch"/> to use for drawing.</param>
+        /// <param name="menu">The expanded <see cref="DropdownMenu"/> to draw on.</param>
+        /// <param name="spriteBatch">The <see cref="SpriteBatch"/> to use for drawing.</param>
         /// <param name="item">The item.</param>
         /// <param name="index">The index of the item.</param>
         /// <param name="highlighted">If the mouse is currently hovering the item.</param>
         protected abstract void PaintDropdownItem(DropdownMenu menu, SpriteBatch spriteBatch, T item, int index, bool highlighted);
 
         /// <summary>
-        /// Returns the index of the item being hovered over given the mouse position relative to the expanded <seealso cref="DropdownMenu"/>, 
+        /// Returns the index of the item being hovered over given the mouse position relative to the expanded <see cref="DropdownMenu"/>, 
         /// </summary>
-        /// <param name="relativeMousePosition">Mouse position relative to the expanded <seealso cref="DropdownMenu"/>.</param>
+        /// <param name="relativeMousePosition">Mouse position relative to the expanded <see cref="DropdownMenu"/>.</param>
         /// <returns>Index of the hovered item.</returns>
-        protected abstract int GetHighlightedItemIndex(Point relativeMousePosition);
+        protected virtual int GetHighlightedItemIndex(Point relativeMousePosition) {
+            return -1;
+        }
 
         /// <summary>
-        /// Returns the size of the expanded <seealso cref="DropdownMenu"/>.
+        /// Returns the size of the expanded <see cref="DropdownMenu"/>.
         /// </summary>
-        /// <returns>Size of the expanded <seealso cref="DropdownMenu"/>.</returns>
-        protected abstract Point GetDropdownSize();
+        /// <returns>Size of the expanded <see cref="DropdownMenu"/>.</returns>
+        protected virtual Point GetDropdownSize() {
+            return this.MenuSize;
+        }
+
+        /// <summary>
+        /// Called when the expanded <see cref="DropdownMenu"/> is shown.
+        /// </summary>
+        /// <param name="menu">The expanded <see cref="DropdownMenu"/>.</param>
+        protected virtual void OnDropdownMenuShown(DropdownMenu menu) {
+            /* NOOP */
+        }
+
+        /// <summary>
+        /// Called when the expanded <see cref="DropdownMenu"/> is closed.
+        /// </summary>
+        /// <param name="menu">The expanded <see cref="DropdownMenu"/>.</param>
+        /// <remarks><see cref="DropdownMenu.Dispose"/> is called after this function.</remarks>
+        protected virtual void OnDropdownMenuClosed(DropdownMenu menu) {
+            /* NOOP */
+        }
     }
 }
