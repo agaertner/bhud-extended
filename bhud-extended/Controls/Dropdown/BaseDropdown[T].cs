@@ -8,6 +8,8 @@ namespace Blish_HUD.Extended
 {
     public abstract class BaseDropdown<T> : Control
     {
+        protected const int BORDER_WIDTH = 2;
+
         protected sealed class DropdownMenu : FlowPanel
         {
             private const int TOOLTIP_HOVER_DELAY    = 800;
@@ -18,7 +20,6 @@ namespace Blish_HUD.Extended
                 private readonly KeyValuePair<T, Func<string>> _item;
                 public readonly DropdownMenu _menu;
                 public DropdownItem(DropdownMenu assocMenu, KeyValuePair<T, Func<string>> item) {
-                    Parent = assocMenu;
                     _menu  = assocMenu;
                     _item = item;
                 }
@@ -28,13 +29,14 @@ namespace Blish_HUD.Extended
                 }
 
                 protected override CaptureType CapturesInput() {
-                    return CaptureType.Filter;
+                    return CaptureType.Filter; // Allow clicks to go through to the DropdownMenu.
                 }
 
                 public override void DoUpdate(GameTime gameTime) {
                     if (this.MouseOver) {
                         _menu.HoveredItem = _item.Key;
                     }
+                    // BasicTooltip (_item.Value) could be applied here instead of in DropdownMenu.
                 }
             }
 
@@ -60,17 +62,17 @@ namespace Blish_HUD.Extended
 
             private DropdownMenu(BaseDropdown<T> assocDropdown)
             {
-                _dropdown  = assocDropdown;
-                _size      = _dropdown.GetDropdownSize();
-                _location  = GetPanelLocation();
-                _zIndex    = Screen.TOOLTIP_BASEZINDEX;
-                _startTop  = _location.Y;
+                _dropdown = assocDropdown;
+                _size     = _dropdown.GetDropdownSize();
+                _location = GetPanelLocation();
+                _zIndex   = Screen.TOOLTIP_BASEZINDEX;
+                _startTop = _location.Y;
 
                 _canScroll           = true;
                 _outerControlPadding = new Vector2(_dropdown.Margin, _dropdown.Margin);
                 _controlPadding      = new Vector2(_dropdown.Spacing,_dropdown.Spacing);
 
-                this.Parent               = Graphics.SpriteScreen;
+                this.Parent = Graphics.SpriteScreen;
 
                 Input.Mouse.LeftMouseButtonPressed += InputOnMousedOffDropdownPanel;
                 Input.Mouse.RightMouseButtonPressed += InputOnMousedOffDropdownPanel;
@@ -92,7 +94,14 @@ namespace Blish_HUD.Extended
 
             public static DropdownMenu ShowPanel(BaseDropdown<T> assocDropdown)
             {
-                return new DropdownMenu(assocDropdown);
+                var menu = new DropdownMenu(assocDropdown);
+                foreach (var item in assocDropdown._items) {
+                    _ = new DropdownItem(menu, item) {
+                        Parent = menu,
+                        Size = assocDropdown.GetDropdownItemSize()
+                    };
+                }
+                return menu;
             }
 
             private void InputOnMousedOffDropdownPanel(object sender, MouseEventArgs e)
@@ -381,10 +390,10 @@ namespace Blish_HUD.Extended
         /// <param name="menu">The expanded <see cref="DropdownMenu"/> to draw on.</param>
         /// <param name="spriteBatch">The <see cref="SpriteBatch"/> to use for drawing.</param>
         protected virtual void PaintDropdown(DropdownMenu menu, SpriteBatch spriteBatch) {
+            // Background
             spriteBatch.DrawRectangleOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), Color.Black);
-
-            // Border (1px thick around dropdown)
-            spriteBatch.DrawRectangleOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), 1, Color.White * 0.5f);
+            // Border
+            spriteBatch.DrawRectangleOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), BORDER_WIDTH, Color.White * 0.5f);
         }
 
         /// <summary>
@@ -404,13 +413,19 @@ namespace Blish_HUD.Extended
         }
 
         /// <summary>
+        /// Returns the size of each <see cref="DropdownMenu.DropdownItem"/>.
+        /// </summary>
+        /// <returns>Size of a <see cref="DropdownMenu.DropdownItem"/>.</returns>
+        protected virtual Point GetDropdownItemSize() {
+            return new Point(this.Width - BORDER_WIDTH, this.Height);
+        }
+
+        /// <summary>
         /// Called when the expanded <see cref="DropdownMenu"/> is shown.
         /// </summary>
         /// <param name="menu">The expanded <see cref="DropdownMenu"/>.</param>
         protected virtual void OnDropdownMenuShown(DropdownMenu menu) {
-            foreach (KeyValuePair<T, Func<string>> item in _items) {
-                _ = new DropdownMenu.DropdownItem(menu, item);
-            }
+            /* NOOP */
         }
 
         /// <summary>

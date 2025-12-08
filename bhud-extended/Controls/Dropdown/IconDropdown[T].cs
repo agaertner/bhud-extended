@@ -20,8 +20,6 @@ namespace Blish_HUD.Extended
 
         private AsyncTexture2D _selectedItemIcon;
 
-        private const int BORDER_WIDTH = 2;
-
         private int _itemsPerRow = 5;
         public int ItemsPerRow {
             get => _itemsPerRow;
@@ -78,7 +76,6 @@ namespace Blish_HUD.Extended
 
         protected override void OnDropdownMenuShown(DropdownMenu menu) {
             menu.FlowDirection = ControlFlowDirection.LeftToRight;
-            base.OnDropdownMenuShown(menu);
         }
 
         protected override void OnItemRemoved(T item) {
@@ -133,18 +130,14 @@ namespace Blish_HUD.Extended
 
         protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds) {
             var icon = GetItemIcon(ctrl.Item);
-            if (icon == null || !icon.HasTexture) {
-                return;
-            }
+            if (icon == null || !icon.HasTexture) return;
 
-            ctrl.Size = GetMaxItemSize();
-
-            spriteBatch.DrawOnCtrl(ctrl, _textureEmptySlot, bounds, Color.White);
+            spriteBatch.DrawOnCtrl(ctrl, _textureEmptySlot, bounds, Color.White); // Background slot texture.
             var centered = GetInner(bounds).GetCenteredFit(icon.Bounds.Size);
-            spriteBatch.DrawOnCtrl(ctrl, icon, centered);
+            spriteBatch.DrawOnCtrl(ctrl, icon, centered); // Icon fitted to slot texture.
 
-            if (ctrl.MouseOver) {
-                spriteBatch.DrawRectangleOnCtrl(ctrl, bounds, BORDER_WIDTH, Color.White * 0.7f);
+            if (ctrl.MouseOver) { // Should be highlighted.
+                spriteBatch.DrawRectangleOnCtrl(ctrl, bounds, BORDER_WIDTH, Color.White * 0.7f); // Border.
             } else if (!this.HasSelected || !Equals(ctrl.Item, SelectedItem)) {
                 spriteBatch.DrawRectangleOnCtrl(ctrl, bounds, Color.Black * 0.4f);
             }
@@ -153,15 +146,20 @@ namespace Blish_HUD.Extended
         protected override Point GetDropdownSize() {
             if (_itemIcons.Count == 0 || _itemsPerRow <= 0) return Point.Zero;
 
-            var maxIconSize = GetMaxItemSize();
+            var itemSize = GetDropdownItemSize();
 
             int columns  = Math.Min(_itemsPerRow, _itemIcons.Count);
             int rows = (_itemIcons.Count + _itemsPerRow - 1) / _itemsPerRow;
 
-            int totalWidth  = columns * maxIconSize.X + (columns - 1) * this.Spacing + 2 * this.Margin;
-            int totalHeight = rows    * maxIconSize.Y + (rows    - 1) * this.Spacing + 2 * this.Margin;
+            int totalWidth  = columns * itemSize.X + (columns - 1) * this.Spacing + 2 * this.Margin;
+            int totalHeight = rows    * itemSize.Y + (rows    - 1) * this.Spacing + 2 * this.Margin;
 
-            return new Point(totalWidth, this.MenuHeight > maxIconSize.Y + 2 * this.Margin ? this.MenuHeight : totalHeight); // No scrollbar (draw all items) if max menu height smaller than one row.
+            // Scale to fit all items at once (no scrollbar) if custom MenuHeight is smaller than one row.
+            return new Point(totalWidth, this.MenuHeight > itemSize.Y + 2 * this.Margin ? this.MenuHeight : totalHeight); 
+        }
+
+        protected override Point GetDropdownItemSize() {
+            return GetMaxItemSize();
         }
     }
 }

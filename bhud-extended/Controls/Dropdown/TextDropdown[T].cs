@@ -27,8 +27,6 @@ namespace Blish_HUD.Extended
         private readonly Color  _defaultColor;
         private readonly Color  _placeholderColor;
 
-        private const int BORDER_WIDTH = 2;
-
         private string _placeholderText;
         public string PlaceholderText {
             get => _placeholderText;
@@ -103,9 +101,8 @@ namespace Blish_HUD.Extended
         }
 
         protected override void OnDropdownMenuShown(DropdownMenu menu) {
-            base.OnDropdownMenuShown(menu);
             menu.FlowDirection       = ControlFlowDirection.SingleTopToBottom;
-            menu.OuterControlPadding = Vector2.Zero; // The margin is added in PaintDropdownItem to stretch the highlight across the item.
+            menu.OuterControlPadding = new Vector2(BORDER_WIDTH, BORDER_WIDTH);
         }
 
         protected override void OnItemRemoved(T value) {
@@ -208,15 +205,14 @@ namespace Blish_HUD.Extended
         }
 
         protected override void PaintDropdownItem(DropdownMenu.DropdownItem ctrl, SpriteBatch spriteBatch, Rectangle bounds) {
-            ctrl.Size = new Point(this.Width, this.Height);
-            if (ctrl.MouseOver) {
+            if (ctrl.MouseOver) { // Should be highlighted.
                 spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel,
-                                       new Rectangle(bounds.X + BORDER_WIDTH, bounds.Y + BORDER_WIDTH, bounds.Width - 2 * BORDER_WIDTH, bounds.Height - 2 * BORDER_WIDTH),
+                                       new Rectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height), // Highlight entire item row.
                                        new Color(45, 37, 25, 255));
                 spriteBatch.DrawStringOnCtrl(ctrl,
                                              GetItemText(ctrl.Item),
                                              _font,
-                                             new Rectangle(this.Margin, bounds.Y, bounds.Width - this.Margin, bounds.Height),
+                                             new Rectangle(this.Margin, bounds.Y, bounds.Width - this.Margin, bounds.Height), // Apply left margin to text.
                                              _itemColors.TryGetValue(ctrl.Item, out var color) ? color : ContentService.Colors.Chardonnay);
             } else {
                 spriteBatch.DrawStringOnCtrl(ctrl,
@@ -228,8 +224,9 @@ namespace Blish_HUD.Extended
         }
 
         protected override Point GetDropdownSize() {
-            return new Point(this.Width, this.MenuHeight > this.Height ? this.MenuHeight : this.Height * _itemTexts.Count); // No scrollbar (draw all items) if max menu height smaller than one row.
+            var itemSize = GetDropdownItemSize();
+            // Scale to fit all items at once (no scrollbar) if custom MenuHeight is smaller than one row.
+            return new Point(this.Width, this.MenuHeight > itemSize.Y + 2 * BORDER_WIDTH ? this.MenuHeight : itemSize.Y * _itemTexts.Count + 2 * BORDER_WIDTH);
         }
-
     }
 }
