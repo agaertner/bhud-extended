@@ -8,6 +8,10 @@ using System.Collections.Generic;
 
 namespace Blish_HUD.Extended
 {
+    /// <summary>
+    /// A dropdown control that displays text for each item.
+    /// </summary>
+    /// <typeparam name="T">The value an item holds and which is returned when selected.</typeparam>
     public class TextDropdown<T> : BaseDropdown<T> {
 
         #region Load Static
@@ -28,6 +32,9 @@ namespace Blish_HUD.Extended
         private readonly Color  _placeholderColor;
 
         private string _placeholderText;
+        /// <summary>
+        /// Gets or sets a placeholder text displayed when no item is selected.
+        /// </summary>
         public string PlaceholderText {
             get => _placeholderText;
             set {
@@ -39,6 +46,9 @@ namespace Blish_HUD.Extended
         }
 
         private bool _autoSizeWidth;
+        /// <summary>
+        /// Gets or sets whether the <see cref="BaseDropdown{T}.Width"/> should automatically adjust to fit <see cref="BaseDropdown{T}.SelectedItem"/>'s display text or <see cref="TextDropdown{T}.PlaceholderText"/>.
+        /// </summary>
         public bool AutoSizeWidth {
             get => _autoSizeWidth;
             set {
@@ -50,6 +60,9 @@ namespace Blish_HUD.Extended
         }
 
         private BitmapFont _font;
+        /// <summary>
+        /// Gets or sets the font used to render text.
+        /// </summary>
         public BitmapFont Font {
             get => _font;
             set {

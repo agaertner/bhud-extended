@@ -6,6 +6,11 @@ using System;
 using System.Collections.Generic;
 namespace Blish_HUD.Extended
 {
+    /// <summary>
+    /// Implements base functionality of a dropdown control (i.e. items, click events).
+    /// Can be used to create a dropdown with custom appearance and behaviour by overriding functions.
+    /// </summary>
+    /// <typeparam name="T">The value an item holds and which is returned when selected.</typeparam>
     public abstract class BaseDropdown<T> : Control
     {
         protected const int BORDER_WIDTH = 2;
@@ -213,11 +218,11 @@ namespace Blish_HUD.Extended
             get => _menuSize;
             set {
                 if (_menuSize == value || value.X < 0 || value.Y < 0) return;
-                var menuSize = _menuSize;
+                var prevSize = _menuSize;
                 _menuSize = value; 
                 OnPropertyChanged();
-                if (menuSize.Y != _menuSize.Y) OnPropertyChanged(nameof(MenuHeight), false);
-                if (menuSize.X != _menuSize.X) OnPropertyChanged(nameof(MenuWidth), false);
+                if (prevSize.Y != _menuSize.Y) OnPropertyChanged(nameof(MenuHeight), false);
+                if (prevSize.X != _menuSize.X) OnPropertyChanged(nameof(MenuWidth), false);
             }
         }
 

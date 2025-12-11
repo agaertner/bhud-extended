@@ -7,6 +7,10 @@ using System.Collections.Generic;
 
 namespace Blish_HUD.Extended
 {
+    /// <summary>
+    /// A dropdown control that displays icons for each item instead of text.
+    /// </summary>
+    /// <typeparam name="T">The value an item holds and which is returned when selected.</typeparam>
     public class IconDropdown<T> : BaseDropdown<T> {
 
         private static Rectangle GetInner(Rectangle bounds) {
@@ -21,6 +25,9 @@ namespace Blish_HUD.Extended
         private AsyncTexture2D _selectedItemIcon;
 
         private int _itemsPerRow = 5;
+        /// <summary>
+        /// Gets or sets the number of items to display per row.
+        /// </summary>
         public int ItemsPerRow {
             get => _itemsPerRow;
             set {
