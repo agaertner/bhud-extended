@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 
 namespace Blish_HUD.Extended
 {
@@ -24,15 +25,16 @@ namespace Blish_HUD.Extended
                 // Get a response from the base api url and infer a rough global status.
                 using var response = "https://api.guildwars2.com/".AllowHttpStatus(HttpStatusCode.ServiceUnavailable)
                     .AllowHttpStatus(HttpStatusCode.InternalServerError)
-                    .GetAsync(default, HttpCompletionOption.ResponseHeadersRead).Result;
+                    .GetAsync(CancellationToken.None, HttpCompletionOption.ResponseHeadersRead).Result;
 
                 // API is broken.
                 if (response.StatusCode == HttpStatusCode.InternalServerError) {
                     l_err = $"{Resources.API_is_down_} {Resources.Please__try_again_later_}";
                 } else if (response.StatusCode == HttpStatusCode.ServiceUnavailable) { // API is down for maintenance. Chances are high body contains a message.
-                    var body = response.Content.ReadAsStringAsync().Result;
+                    var body   = response.Content.ReadAsStringAsync().Result;
                     var header = body.GetTextBetweenTags("h1").Trim(); // Eg. "<h1>API Temporarily disabled</h1><p>Scheduled reactivation: 23 August.</p>"
-                    var paragraph = (body.GetTextBetweenTags("p").Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries).Reverse().FirstOrDefault() ?? string.Empty).Trim();
+                    string paragraph = body.GetTextBetweenTags("p").Split(['.'], StringSplitOptions.RemoveEmptyEntries)
+                                           .AsEnumerable().Reverse().First().Trim();
                     l_err = $"{header}. {paragraph}.";
                 }
 
