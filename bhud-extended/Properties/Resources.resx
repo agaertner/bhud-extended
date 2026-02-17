@@ -165,4 +165,44 @@
   <data name="Apply" xml:space="preserve">
     <value>Apply</value>
   </data>
+  <data name="Action_Accept" xml:space="preserve">
+    <value>Accept</value>
+    <comment>Found on a button to confirm the provided information.</comment>
+  </data>
+  <data name="Action_Apply" xml:space="preserve">
+    <value>Apply</value>
+    <comment>Found on a button to apply the provided information.</comment>
+  </data>
+  <data name="Action_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Found on a button to cancel the operation.</comment>
+  </data>
+  <data name="Action_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>Found on a button to hide the provided information.</comment>
+  </data>
+  <data name="Action_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+    <comment>Found on a button to confirm the provided information.</comment>
+  </data>
+  <data name="Action_Decline" xml:space="preserve">
+    <value>Decline</value>
+    <comment>Found on a button to decline the provided information.</comment>
+  </data>
+  <data name="Action_Ignore" xml:space="preserve">
+    <value>Ignore</value>
+    <comment>Found on a button to ignore the provided information.</comment>
+  </data>
+  <data name="Action_No" xml:space="preserve">
+    <value>No</value>
+    <comment>Found on a button to decline the provided information.</comment>
+  </data>
+  <data name="Action_OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>Found on a button to acknowledge the provided information.</comment>
+  </data>
+  <data name="Action_Yes" xml:space="preserve">
+    <value>Yes</value>
+    <comment>Found on a button to confirm the provided information.</comment>
+  </data>
 </root>

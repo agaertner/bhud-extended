@@ -290,7 +290,7 @@
     <Compile Include="Controls\Dropdown\IconDropdown[T].cs" />
     <Compile Include="Controls\Dropdown\BaseDropdown[T].cs" />
     <Compile Include="Controls\Dropdown\TextDropdown[T].cs" />
-    <Compile Include="Controls\ErrorPrompt.cs" />
+    <Compile Include="Controls\StandardDialog.cs" />
     <Compile Include="EmbeddedResourceLoader.cs" />
     <Compile Include="Extensions\BlishHudExtensions\Gw2ApiManagerExtensions.cs" />
     <Compile Include="Extensions\BlishHudExtensions\Gw2MumbleServiceExtensions.cs" />
@@ -330,7 +330,7 @@
     <EmbeddedResource Include="Properties\Resources.kr.resx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <LastGenOutput>Resources1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.zh.resx" />
   </ItemGroup>

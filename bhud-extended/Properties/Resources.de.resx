@@ -165,4 +165,34 @@
   <data name="Apply" xml:space="preserve">
     <value>Anwenden</value>
   </data>
+  <data name="Action_Accept" xml:space="preserve">
+    <value>Annehmen</value>
+  </data>
+  <data name="Action_Apply" xml:space="preserve">
+    <value>Anwenden</value>
+  </data>
+  <data name="Action_Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Action_Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="Action_Confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
+  <data name="Action_Decline" xml:space="preserve">
+    <value>Ablehnen</value>
+  </data>
+  <data name="Action_Ignore" xml:space="preserve">
+    <value>Ignorieren</value>
+  </data>
+  <data name="Action_No" xml:space="preserve">
+    <value>Nein</value>
+  </data>
+  <data name="Action_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Action_Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
 </root>

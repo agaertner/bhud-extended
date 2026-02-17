@@ -396,9 +396,9 @@ namespace Blish_HUD.Extended
         /// <param name="spriteBatch">The <see cref="SpriteBatch"/> to use for drawing.</param>
         protected virtual void PaintDropdown(DropdownMenu menu, SpriteBatch spriteBatch) {
             // Background
-            spriteBatch.DrawRectangleOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), Color.Black);
+            spriteBatch.DrawOnCtrl(menu, ContentService.Textures.Pixel, new Rectangle(Point.Zero, menu.Size), Color.Black);
             // Border
-            spriteBatch.DrawRectangleOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), BORDER_WIDTH, Color.White * 0.5f);
+            spriteBatch.DrawBorderOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), BORDER_WIDTH, Color.White * 0.5f);
         }
 
         /// <summary>

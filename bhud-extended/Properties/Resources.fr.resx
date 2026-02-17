@@ -139,7 +139,7 @@
     <value>Veuillez réessayer plus tard.</value>
   </data>
   <data name="API is down." xml:space="preserve">
-    <value>L&apos;API est en panne.</value>
+    <value>L'API est en panne.</value>
   </data>
   <data name="OK" xml:space="preserve">
     <value>OK</value>
@@ -164,5 +164,35 @@
   </data>
   <data name="Apply" xml:space="preserve">
     <value>Appliquer</value>
+  </data>
+  <data name="Action_Accept" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+  <data name="Action_Apply" xml:space="preserve">
+    <value>Appliquer</value>
+  </data>
+  <data name="Action_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Action_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Action_Confirm" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Action_Decline" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+  <data name="Action_Ignore" xml:space="preserve">
+    <value>Ignorer</value>
+  </data>
+  <data name="Action_No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="Action_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Action_Yes" xml:space="preserve">
+    <value>Oui</value>
   </data>
 </root>

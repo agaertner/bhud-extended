@@ -1,0 +1,390 @@
+﻿using Blish_HUD.Content;
+using Blish_HUD.Controls;
+using Blish_HUD.Extended.Properties;
+using Blish_HUD.Input;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Color = Microsoft.Xna.Framework.Color;
+using Point = Microsoft.Xna.Framework.Point;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
+namespace Blish_HUD.Extended {
+    /// <summary>
+    /// Specifies default icons that can be displayed in a dialog box, specifically <see cref="StandardDialog"/>.
+    /// </summary>
+    public enum DialogIcon {
+        None,
+        Exclamation,
+        Question,
+        Present
+    }
+
+    /// <summary>
+    /// Represents a modal prompt that displays a message and allows user interaction through buttons.
+    /// </summary>
+    /// <remarks>
+    /// The prompt is displayed in the center of the <seealso cref="SpriteBatch">screen</seealso> 
+    /// and can include an optional <seealso cref="AsyncTexture2D">icon</seealso>. 
+    /// It supports multiple buttons with <seealso cref="Action">callbacks</seealso>.<br/>
+    /// Navigation and interaction is also possible via <see cref="Keys.Tab"/> and <seealso cref="Keys.Enter"/> respectively.
+    /// <seealso cref="Keys.Escape"/> closes the prompt silently.
+    /// </remarks>
+    public sealed class StandardDialog : Container {
+        private static Texture2D _questionIcon;
+        private static Texture2D _exclamationIcon;
+        private static Texture2D _presentIcon;
+
+        private AsyncTexture2D _bgTexture;
+        private Rectangle      _bgTextureBounds; // Bounds of bg texture without empty margins and borders.
+        private AsyncTexture2D _icon; // Optional icon to display.
+
+        private Rectangle _bgBounds; // Calculated bounds of container.
+
+        private const int DIALOG_WIDTH  = 350; // Fixed dialog width.
+        private const int DIALOG_HEIGHT = 100; // Minimum dialog height.
+        private const int BUTTON_HEIGHT = 24; // Fixed button height.
+        private const int BUTTON_WIDTH  = 117; // Minimum button width.
+
+        private const int ICON_SIZE     = 64;
+        private const int ICON_MARGIN   = 5; // Space between icon and text.
+        private const int BUTTON_MARGIN = 3; // Space between buttons.
+
+        private int _maxButtonWidth; // Calculated max button width based on text width.
+
+        private readonly List<DialogButton> _buttons;
+        private readonly FormattedLabel _label;
+
+        private StandardDialog(
+            Container parent,
+            FormattedLabelBuilder label, 
+            AsyncTexture2D icon, 
+            List<DialogButton> buttons) {
+
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent), $"[{nameof(StandardDialog)}] Parameter '{nameof(parent)}' cannot be null.");
+
+            if (label == null)
+                throw new ArgumentNullException(nameof(label), $"[{nameof(StandardDialog)}] Parameter '{nameof(label)}' cannot be null.");
+
+            this.Parent = parent;
+            this.Location = Point.Zero;
+            this.Size = parent.Size;
+
+            var dialogWidth = DIALOG_WIDTH;
+            if (this.Parent.Width < DIALOG_WIDTH) { // Adjust to small parent container.
+                dialogWidth = this.Parent.Width - (Panel.RIGHT_PADDING * 2) - (Panel.LEFT_PADDING * 2);
+                if (dialogWidth <= 0)
+                    throw new Exception($"[{nameof(StandardDialog)}] Parent container width is too small.");
+            }
+
+            _label = label.SetWidth(dialogWidth).AutoSizeHeight().Wrap().Build();
+
+            if (_label.Height > this.Parent.Height)
+                throw new Exception($"[{nameof(StandardDialog)}] Parameter '{nameof(label)}' exceeded parent container height.");
+
+            if (_label.Height == 0)
+                throw new ArgumentException($"[{nameof(StandardDialog)}] Parameter '{nameof(label)}' must have non-empty text or its height failed to calculate.", nameof(label));
+
+            // Defaulting to OK button if no buttons provided to ensure there's always a way to close the prompt.
+            if (buttons == null || buttons.Count == 0)
+                buttons = new List<DialogButton>() { DialogButton.OK };
+
+            if (buttons.Count(b => b.Selected) > 1)
+                throw new ArgumentException($"[{nameof(StandardDialog)}] Only one {nameof(DialogButton)} can be selected by default.", nameof(buttons));
+
+            _label.Parent   = this;
+            _icon           = icon;
+            _buttons        = buttons;
+            _maxButtonWidth = BUTTON_WIDTH;
+
+            // Calculate max button width.
+            foreach (DialogButton button in _buttons) {
+                var bttnWidth = GameService.Content.DefaultFont14 // Default font of StandardButton.
+                    .MeasureString(button.Text).Width + Panel.RIGHT_PADDING * 2;
+                if (bttnWidth > _maxButtonWidth) 
+                    _maxButtonWidth = (int)Math.Round(bttnWidth);
+            }
+
+            this.ZIndex = Screen.TOOLTIP_BASEZINDEX - 16; // Top most layer but lower than tooltip.
+            this.LoadTextures();
+            GameService.Input.Keyboard.KeyPressed += OnKeyPressed;
+        }
+
+        private void LoadTextures() {
+            _bgTexture = GameService.Content.DatAssetCache.GetTextureFromAssetId(156003);
+            _bgTextureBounds = new Rectangle(33, 27, 936, 936); // Ensure empty margin and border parts of bg texture are avoided.
+        }
+
+        protected override void DisposeControl() {
+            //_icon?.Dispose(); // Disposal of icon should be handled by caller.
+            GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
+            base.DisposeControl();
+        }
+
+        private void OnKeyPressed(object o, KeyboardEventArgs e) {
+            /*if (e.Key == Keys.Escape) {
+                this.Dispose(); // Close the prompt silently.
+                return;
+            }*/
+
+            if (e.Key == Keys.Enter) {
+                _buttons.FirstOrDefault(b => b.Selected)?.DoClick(this);
+                return;
+            }
+
+            if (e.Key == Keys.Tab) {
+                CycleButtonFocus();
+                return;
+            }
+        }
+
+        private void CycleButtonFocus() {
+            GameService.Content.PlaySoundEffectByName("menu-item-click");
+
+            // Find currently selected index.
+            int currentIndex = _buttons.FindIndex(b => b.Selected);
+
+            // Fallback if none selected yet.
+            if (currentIndex < 0) currentIndex = 0;
+
+            bool backwards = (GameService.Input.Keyboard.ActiveModifiers & ModifierKeys.Shift) != 0;
+
+            int newIndex = backwards
+                ? (currentIndex - 1 + _buttons.Count) % _buttons.Count
+                : (currentIndex + 1) % _buttons.Count;
+
+            // Update selection.
+            for (int i = 0; i < _buttons.Count; i++) {
+                _buttons[i].Select(i == newIndex);
+            }
+        }
+
+        /// <inheritdoc cref="Show(Container, FormattedLabelBuilder, AsyncTexture2D, DialogButton[])"/>
+        public static void Show(FormattedLabelBuilder label, params DialogButton[] buttons) {
+            Show(null, label, null, buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, string, DialogIcon, DialogButton[])"/>
+        public static void Show(string text, DialogIcon sysIcon, params DialogButton[] buttons) {
+            Show(null, GetDefaultLabel(text), GetDefaultIcon(sysIcon), buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, string, AsyncTexture2D, DialogButton[])"/>
+        public static void Show(string text, AsyncTexture2D customIcon, params DialogButton[] buttons) {
+            Show(null, GetDefaultLabel(text), customIcon, buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, string, AsyncTexture2D, DialogButton[])"/>
+        public static void Show(string text, params DialogButton[] buttons) {
+            Show(null, GetDefaultLabel(text), null, buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, FormattedLabelBuilder, DialogIcon, DialogButton[])"/>
+        public static void Show(FormattedLabelBuilder label, DialogIcon sysIcon, params DialogButton[] buttons) {
+            Show(null, label, GetDefaultIcon(sysIcon), buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, FormattedLabelBuilder, AsyncTexture2D, DialogButton[])"/>
+        public static void Show(FormattedLabelBuilder label, AsyncTexture2D customIcon, params DialogButton[] buttons) {
+            Show(null, label, customIcon, buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, FormattedLabelBuilder, AsyncTexture2D, DialogButton[])"/>
+        public static void Show(Container parent, FormattedLabelBuilder label, params DialogButton[] buttons) {
+            Show(parent, label, null, buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, string, DialogIcon, DialogButton[])"/>
+        public static void Show(Container parent, string text, AsyncTexture2D customIcon, params DialogButton[] buttons) {
+            Show(parent, GetDefaultLabel(text), customIcon, buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, string, DialogIcon, DialogButton[])"/>
+        public static void Show(Container parent, string text, params DialogButton[] buttons) {
+            Show(parent, GetDefaultLabel(text), null, buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, FormattedLabelBuilder, AsyncTexture2D, DialogButton[])"/>
+        /// <inheritdoc cref="Show(Container, string, DialogIcon, DialogButton[])"/>
+        public static void Show(Container parent, FormattedLabelBuilder label, DialogIcon sysIcon, params DialogButton[] buttons) {
+            Show(parent, label, GetDefaultIcon(sysIcon), buttons);
+        }
+
+        /// <inheritdoc cref="Show(Container, FormattedLabelBuilder, AsyncTexture2D, DialogButton[])"/>
+        /// <param name="text">Text inside the <see cref="StandardDialog"/>.</param>
+        /// <param name="sysIcon">Predefined icon to display in the top-left corner of the <see cref="StandardDialog"/>.</param>
+        public static void Show(Container parent, string text, DialogIcon sysIcon, params DialogButton[] buttons) {
+            Show(parent, GetDefaultLabel(text), GetDefaultIcon(sysIcon), buttons);
+        }
+
+        /// <summary>
+        /// Shows an immovable <seealso cref="StandardDialog"/> in the center of its parent container, blocking input until it is closed.
+        /// </summary>
+        /// <param name="parent">The container to show the <seealso cref="StandardDialog"/> in. Defaults to <see cref="GameService"/><c>.Graphics.SpriteScreen</c>.</param>
+        /// <param name="label">Formatted text inside the <seealso cref="StandardDialog"/>.</param>
+        /// <param name="customIcon">Icon to display in the top-left corner of the <seealso cref="StandardDialog"/>.</param>
+        /// <param name="buttons">Buttons that the <seealso cref="StandardDialog"/> should have.</param>
+        /// <remarks>
+        /// Internally calls <see cref="FormattedLabelBuilder.SetWidth(int)"/>, <see cref="FormattedLabelBuilder.AutoSizeHeight"/> 
+        /// <see cref="FormattedLabelBuilder.Wrap"/> and <see cref="FormattedLabelBuilder.Build"/> on the <paramref name="label"/>.<br/>
+        /// The <paramref name="customIcon"/> will <c>not</c> be disposed with the <seealso cref="StandardDialog"/>.
+        /// </remarks>
+        public static void Show(Container parent, FormattedLabelBuilder label, AsyncTexture2D customIcon, params DialogButton[] buttons) {
+            parent ??= GameService.Graphics.SpriteScreen;
+            new StandardDialog(parent, label, customIcon, buttons?.ToList()).Show();
+        }
+
+        private static FormattedLabelBuilder GetDefaultLabel(string text) {
+            return new FormattedLabelBuilder()
+                .CreatePart(text, o => o.SetFontSize(ContentService.FontSize.Size16));
+        }
+
+        private static AsyncTexture2D GetDefaultIcon(DialogIcon sysIcon) {
+            var iconTex = new AsyncTexture2D();
+            var iconAtlas = GameService.Content.DatAssetCache.GetTextureFromAssetId(154985);
+            iconAtlas.TextureSwapped += (o, e) => {
+                _exclamationIcon ??= e.NewValue.GetRegion(0, 0, 64, 64);
+                _questionIcon    ??= e.NewValue.GetRegion(64, 0, 64, 64);
+                _presentIcon     ??= e.NewValue.GetRegion(128, 0, 64, 64);
+                SwapDefaultIcon(sysIcon, iconTex);
+            };
+            SwapDefaultIcon(sysIcon, iconTex);
+            return iconTex;
+        }
+
+        private static void SwapDefaultIcon(DialogIcon sysIcon, AsyncTexture2D iconTex) {
+            switch (sysIcon) {
+                case DialogIcon.Exclamation: iconTex.SwapTexture(_exclamationIcon); break;
+                case DialogIcon.Question: iconTex.SwapTexture(_questionIcon); break;
+                case DialogIcon.Present: iconTex.SwapTexture(_presentIcon); break;
+                default: break;
+            }
+        }
+
+        private void CalculateButtonLayout() {
+            int buttonCount = _buttons.Count;
+            int availableWidth = _bgBounds.Width - Panel.RIGHT_PADDING * 2;
+            int buttonWidth = _maxButtonWidth + Panel.RIGHT_PADDING * 2;
+            var totalMargins = buttonCount * BUTTON_MARGIN;
+            int totalWidth = buttonCount * buttonWidth + totalMargins;
+            // Shrink buttons if row is wider than available space.
+            if (totalWidth > availableWidth) {
+                buttonWidth = Math.Max(1, (availableWidth - totalMargins) / buttonCount);
+                totalWidth = buttonCount * buttonWidth + totalMargins;
+            }
+            // Anchor the row to the RIGHT.
+            int xOffset = _bgBounds.Right - totalWidth - Panel.RIGHT_PADDING;
+            int yOffset = _bgBounds.Bottom - BUTTON_HEIGHT - Panel.BOTTOM_PADDING;
+            foreach (var button in _buttons) {
+                if (button == null) continue;
+                var bounds = new Rectangle(
+                    new Point(xOffset, yOffset),
+                    new Point(buttonWidth, BUTTON_HEIGHT)
+                );
+                button.Transform(this, bounds);
+                xOffset += buttonWidth + BUTTON_MARGIN;
+            }
+        }
+
+        public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds) {
+            base.PaintBeforeChildren(spriteBatch, bounds);
+
+            var textSize   = _label.Size;
+            var textWidth  = textSize.X;
+            var textHeight = textSize.Y < DIALOG_HEIGHT ? DIALOG_HEIGHT : textSize.Y;
+
+            var icon = _icon;
+            var iconSize = icon == null ? 0 : ICON_SIZE;
+            var textPos = new Point(iconSize + ICON_MARGIN + Panel.RIGHT_PADDING * 2, 17);
+
+            textHeight = textHeight > ICON_SIZE ? textHeight : textHeight + iconSize;
+
+            // Darken background outside container
+            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, bounds, Color.Black * 0.15f);
+
+            // Container
+            // Calculate background bounds
+            var bgSize = new Point(textWidth + iconSize + Panel.RIGHT_PADDING * 10, textHeight + BUTTON_HEIGHT + Panel.TOP_PADDING * 4);
+            var bgTextureSize = new Point(bgSize.X < _bgTextureBounds.Width ? bgSize.X : _bgTextureBounds.Width,
+                                      bgSize.Y < _bgTextureBounds.Height ? bgSize.Y : _bgTextureBounds.Height); // Clamp to max texture bounds.
+            var bgTexturePos = new Point((bounds.Width - bgTextureSize.X) / 2, (bounds.Height - bgTextureSize.Y) / 2);
+            var bgBounds = new Rectangle(bgTexturePos, bgSize);
+            _bgBounds = bgBounds;
+
+            // Draw Background (starts stretching when bgSize bigger than bgTextureSize).
+            spriteBatch.DrawOnCtrl(this, _bgTexture, bgBounds, new Rectangle(_bgTextureBounds.Location, bgTextureSize), Color.White);
+
+            // Draw border
+            spriteBatch.DrawBorderOnCtrl(this, _bgBounds, 2, Color.Black);
+
+            if (icon != null && icon.HasTexture) {
+                var iconBounds = new Rectangle(bgBounds.Left + ICON_MARGIN, bgBounds.Top + ICON_MARGIN + 2, ICON_SIZE, ICON_SIZE);
+                spriteBatch.DrawOnCtrl(this, icon, iconBounds);
+            }
+
+            _label.Location = new Point(bgBounds.Left + textPos.X, bgBounds.Y + textPos.Y);
+            this.CalculateButtonLayout();
+        }
+    }
+
+    /// <summary>
+    /// Represents a button that can be added to a dialog, specifically <see cref="StandardDialog"/>.
+    /// </summary>
+    public sealed class DialogButton {
+        internal string Text;
+        internal bool Selected;
+        private Action _callback;
+        private StandardButton _button;
+        private DialogButton(string text) {
+            if (string.IsNullOrEmpty(text)) 
+                throw new ArgumentNullException(nameof(text), $"[{nameof(DialogButton)}] Parameter '{nameof(text)}' cannot be null or empty.");
+
+            Text = text;
+            _button = new StandardButton() {
+                Text = text,
+                Enabled = false
+            };
+            _button.Click += (o, e) => {
+                DoClick(((StandardButton)o).Parent);
+            };
+        }
+
+        internal void DoClick(Container parent) {
+            GameService.Content.PlaySoundEffectByName("button-click");
+            parent?.Dispose();
+            _callback?.Invoke();
+        }
+
+        internal void Transform(Container parent, Rectangle bounds) {
+            _button.Parent = parent;
+            _button.Location = bounds.Location;
+            _button.Size = bounds.Size;
+            _button.Enabled = true;
+        }
+
+        public DialogButton Action(Action callback) {
+            _callback = callback;
+            return this;
+        }
+
+        public DialogButton Select(bool selected = true) {
+            Selected = selected;
+            _button.BackgroundColor = selected ? new Color(192, 216, 255, 217) : Color.Transparent;
+            return this;
+        }
+
+        public static DialogButton OK => new DialogButton(Resources.Action_OK);
+        public static DialogButton Confirm => new DialogButton(Resources.Action_Confirm);
+        public static DialogButton Accept => new DialogButton(Resources.Action_Accept);
+        public static DialogButton Cancel => new DialogButton(Resources.Action_Cancel);
+        public static DialogButton Yes => new DialogButton(Resources.Action_Yes);
+        public static DialogButton No => new DialogButton(Resources.Action_No);
+        public static DialogButton Ignore => new DialogButton(Resources.Action_Ignore);
+        public static DialogButton Close => new DialogButton(Resources.Action_Close);
+        public static DialogButton Apply => new DialogButton(Resources.Action_Apply);
+        public static DialogButton Decline => new DialogButton(Resources.Action_Decline);
+        public static DialogButton Create(string text) => new DialogButton(text);
+    }
+}
