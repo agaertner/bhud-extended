@@ -296,8 +296,8 @@ namespace Blish_HUD.Extended {
 
         private int CalculateHeight() {
             var textHeight = _label.Size.Y < DIALOG_HEIGHT ? DIALOG_HEIGHT : _label.Size.Y;
-            return (textHeight > _maxIconSize ? textHeight : textHeight)
-                + _maxIconSize + Panel.TOP_PADDING * 4 + BUTTON_HEIGHT;
+            return (textHeight > _maxIconSize ? textHeight : textHeight + _maxIconSize)
+                    + BUTTON_HEIGHT + Panel.TOP_PADDING * 4;
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds) {
