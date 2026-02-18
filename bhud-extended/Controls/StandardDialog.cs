@@ -31,26 +31,27 @@ namespace Blish_HUD.Extended {
     /// Navigation and interaction is also possible via <see cref="Keys.Tab"/> and <seealso cref="Keys.Enter"/> respectively.
     /// <seealso cref="Keys.Escape"/> closes the prompt silently.
     /// </remarks>
-    public sealed class StandardDialog : Container {
+    public class StandardDialog : Container {
         private static Texture2D _questionIcon;
         private static Texture2D _exclamationIcon;
         private static Texture2D _presentIcon;
 
         private AsyncTexture2D _bgTexture;
-        private Rectangle      _bgTextureBounds; // Bounds of bg texture without empty margins and borders.
+        private Rectangle _bgTextureBounds; // Bounds of bg texture without empty margins and borders.
         private AsyncTexture2D _icon; // Optional icon to display.
 
         private Rectangle _bgBounds; // Calculated bounds of container.
 
-        private const int DIALOG_WIDTH  = 350; // Fixed dialog width.
+        private const int DIALOG_WIDTH = 454; // Fixed dialog width.
         private const int DIALOG_HEIGHT = 100; // Minimum dialog height.
         private const int BUTTON_HEIGHT = 24; // Fixed button height.
-        private const int BUTTON_WIDTH  = 117; // Minimum button width.
+        private const int BUTTON_WIDTH = 117; // Minimum button width.
 
-        private const int ICON_SIZE     = 64;
-        private const int ICON_MARGIN   = 5; // Space between icon and text.
+        private const int ICON_SIZE = 64;
+        private const int ICON_MARGIN = 5; // Space between icon and text.
         private const int BUTTON_MARGIN = 3; // Space between buttons.
 
+        private int _maxIconSize; // Calculated max icon size.
         private int _maxButtonWidth; // Calculated max button width based on text width.
 
         private readonly List<DialogButton> _buttons;
@@ -58,8 +59,8 @@ namespace Blish_HUD.Extended {
 
         private StandardDialog(
             Container parent,
-            FormattedLabelBuilder label, 
-            AsyncTexture2D icon, 
+            FormattedLabelBuilder label,
+            AsyncTexture2D icon,
             List<DialogButton> buttons) {
 
             if (parent == null)
@@ -72,14 +73,17 @@ namespace Blish_HUD.Extended {
             this.Location = Point.Zero;
             this.Size = parent.Size;
 
-            var dialogWidth = DIALOG_WIDTH;
+            _maxIconSize = icon == null ? 0 : ICON_SIZE;
+
+            var labelPadding = _maxIconSize + Panel.RIGHT_PADDING * 10;
+            var labelWidth = DIALOG_WIDTH - labelPadding;
             if (this.Parent.Width < DIALOG_WIDTH) { // Adjust to small parent container.
-                dialogWidth = this.Parent.Width - (Panel.RIGHT_PADDING * 2) - (Panel.LEFT_PADDING * 2);
-                if (dialogWidth <= 0)
+                labelWidth = this.Parent.Width - labelPadding;
+                if (labelWidth <= 0)
                     throw new Exception($"[{nameof(StandardDialog)}] Parent container width is too small.");
             }
 
-            _label = label.SetWidth(dialogWidth).AutoSizeHeight().Wrap().Build();
+            _label = label.SetWidth(labelWidth).AutoSizeHeight().Wrap().Build();
 
             if (_label.Height > this.Parent.Height)
                 throw new Exception($"[{nameof(StandardDialog)}] Parameter '{nameof(label)}' exceeded parent container height.");
@@ -94,17 +98,19 @@ namespace Blish_HUD.Extended {
             if (buttons.Count(b => b.Selected) > 1)
                 throw new ArgumentException($"[{nameof(StandardDialog)}] Only one {nameof(DialogButton)} can be selected by default.", nameof(buttons));
 
-            _label.Parent   = this;
-            _icon           = icon;
-            _buttons        = buttons;
+            _label.Parent = this;
+            _icon = icon;
+            _buttons = buttons;
             _maxButtonWidth = BUTTON_WIDTH;
 
             // Calculate max button width.
             foreach (DialogButton button in _buttons) {
                 var bttnWidth = GameService.Content.DefaultFont14 // Default font of StandardButton.
                     .MeasureString(button.Text).Width + Panel.RIGHT_PADDING * 2;
-                if (bttnWidth > _maxButtonWidth) 
+                if (bttnWidth > _maxButtonWidth)
                     _maxButtonWidth = (int)Math.Round(bttnWidth);
+
+                button.Click += (s, e) => this.Dispose();
             }
 
             this.ZIndex = Screen.TOOLTIP_BASEZINDEX - 16; // Top most layer but lower than tooltip.
@@ -130,7 +136,7 @@ namespace Blish_HUD.Extended {
             }*/
 
             if (e.Key == Keys.Enter) {
-                _buttons.FirstOrDefault(b => b.Selected)?.DoClick(this);
+                _buttons.FirstOrDefault(b => b.Selected)?.DoClick();
                 return;
             }
 
@@ -246,8 +252,8 @@ namespace Blish_HUD.Extended {
             var iconAtlas = GameService.Content.DatAssetCache.GetTextureFromAssetId(154985);
             iconAtlas.TextureSwapped += (o, e) => {
                 _exclamationIcon ??= e.NewValue.GetRegion(0, 0, 64, 64);
-                _questionIcon    ??= e.NewValue.GetRegion(64, 0, 64, 64);
-                _presentIcon     ??= e.NewValue.GetRegion(128, 0, 64, 64);
+                _questionIcon ??= e.NewValue.GetRegion(64, 0, 64, 64);
+                _presentIcon ??= e.NewValue.GetRegion(128, 0, 64, 64);
                 SwapDefaultIcon(sysIcon, iconTex);
             };
             SwapDefaultIcon(sysIcon, iconTex);
@@ -288,27 +294,26 @@ namespace Blish_HUD.Extended {
             }
         }
 
+        private int CalculateHeight() {
+            var textHeight = _label.Size.Y < DIALOG_HEIGHT ? DIALOG_HEIGHT : _label.Size.Y;
+            return (textHeight > _maxIconSize ? textHeight : textHeight)
+                + _maxIconSize + Panel.TOP_PADDING * 4 + BUTTON_HEIGHT;
+        }
+
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds) {
             base.PaintBeforeChildren(spriteBatch, bounds);
 
-            var textSize   = _label.Size;
-            var textWidth  = textSize.X;
-            var textHeight = textSize.Y < DIALOG_HEIGHT ? DIALOG_HEIGHT : textSize.Y;
-
             var icon = _icon;
-            var iconSize = icon == null ? 0 : ICON_SIZE;
-            var textPos = new Point(iconSize + ICON_MARGIN + Panel.RIGHT_PADDING * 2, 17);
-
-            textHeight = textHeight > ICON_SIZE ? textHeight : textHeight + iconSize;
+            var textPos = new Point(_maxIconSize + ICON_MARGIN + Panel.RIGHT_PADDING * 2, 17);
 
             // Darken background outside container
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, bounds, Color.Black * 0.15f);
 
             // Container
             // Calculate background bounds
-            var bgSize = new Point(textWidth + iconSize + Panel.RIGHT_PADDING * 10, textHeight + BUTTON_HEIGHT + Panel.TOP_PADDING * 4);
+            var bgSize = new Point(DIALOG_WIDTH, CalculateHeight());
             var bgTextureSize = new Point(bgSize.X < _bgTextureBounds.Width ? bgSize.X : _bgTextureBounds.Width,
-                                      bgSize.Y < _bgTextureBounds.Height ? bgSize.Y : _bgTextureBounds.Height); // Clamp to max texture bounds.
+                                          bgSize.Y < _bgTextureBounds.Height ? bgSize.Y : _bgTextureBounds.Height); // Clamp to max texture bounds.
             var bgTexturePos = new Point((bounds.Width - bgTextureSize.X) / 2, (bounds.Height - bgTextureSize.Y) / 2);
             var bgBounds = new Rectangle(bgTexturePos, bgSize);
             _bgBounds = bgBounds;
@@ -317,10 +322,10 @@ namespace Blish_HUD.Extended {
             spriteBatch.DrawOnCtrl(this, _bgTexture, bgBounds, new Rectangle(_bgTextureBounds.Location, bgTextureSize), Color.White);
 
             // Draw border
-            spriteBatch.DrawBorderOnCtrl(this, _bgBounds, 2, Color.Black);
+            spriteBatch.DrawBorderOnCtrl(this, _bgBounds, Color.Black, 2);
 
             if (icon != null && icon.HasTexture) {
-                var iconBounds = new Rectangle(bgBounds.Left + ICON_MARGIN, bgBounds.Top + ICON_MARGIN + 2, ICON_SIZE, ICON_SIZE);
+                var iconBounds = new Rectangle(bgBounds.Left + ICON_MARGIN, bgBounds.Top + ICON_MARGIN + 2, _maxIconSize, _maxIconSize);
                 spriteBatch.DrawOnCtrl(this, icon, iconBounds);
             }
 
@@ -333,12 +338,16 @@ namespace Blish_HUD.Extended {
     /// Represents a button that can be added to a dialog, specifically <see cref="StandardDialog"/>.
     /// </summary>
     public sealed class DialogButton {
+        public event EventHandler<MouseEventArgs> Click;
+
         internal string Text;
         internal bool Selected;
+
         private Action _callback;
         private StandardButton _button;
+
         private DialogButton(string text) {
-            if (string.IsNullOrEmpty(text)) 
+            if (string.IsNullOrEmpty(text))
                 throw new ArgumentNullException(nameof(text), $"[{nameof(DialogButton)}] Parameter '{nameof(text)}' cannot be null or empty.");
 
             Text = text;
@@ -347,14 +356,14 @@ namespace Blish_HUD.Extended {
                 Enabled = false
             };
             _button.Click += (o, e) => {
-                DoClick(((StandardButton)o).Parent);
+                DoClick();
             };
         }
 
-        internal void DoClick(Container parent) {
+        internal void DoClick() {
             GameService.Content.PlaySoundEffectByName("button-click");
-            parent?.Dispose();
             _callback?.Invoke();
+            Click?.Invoke(this, null);
         }
 
         internal void Transform(Container parent, Rectangle bounds) {

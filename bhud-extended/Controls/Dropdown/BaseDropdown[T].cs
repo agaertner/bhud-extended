@@ -398,7 +398,7 @@ namespace Blish_HUD.Extended
             // Background
             spriteBatch.DrawOnCtrl(menu, ContentService.Textures.Pixel, new Rectangle(Point.Zero, menu.Size), Color.Black);
             // Border
-            spriteBatch.DrawBorderOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), BORDER_WIDTH, Color.White * 0.5f);
+            spriteBatch.DrawBorderOnCtrl(menu, new Rectangle(Point.Zero, menu.Size), Color.White * 0.5f, BORDER_WIDTH);
         }
 
         /// <summary>

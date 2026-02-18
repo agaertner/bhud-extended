@@ -144,7 +144,7 @@ namespace Blish_HUD.Extended
             spriteBatch.DrawOnCtrl(ctrl, icon, centered); // Icon fitted to slot texture.
 
             if (ctrl.MouseOver) { // Should be highlighted.
-                spriteBatch.DrawBorderOnCtrl(ctrl, bounds, BORDER_WIDTH, Color.White * 0.7f); // Border.
+                spriteBatch.DrawBorderOnCtrl(ctrl, bounds, Color.White * 0.7f, BORDER_WIDTH); // Border.
             } else if (!this.HasSelected || !Equals(ctrl.Item, SelectedItem)) {
                 spriteBatch.DrawOnCtrl(ctrl, ContentService.Textures.Pixel, bounds, Color.Black * 0.4f);
             }
