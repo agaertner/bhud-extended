@@ -42,17 +42,19 @@ namespace Blish_HUD.Extended {
 
         private Rectangle _bgBounds; // Calculated bounds of container.
 
-        private const int DIALOG_WIDTH = 454; // Fixed dialog width.
+        private const int DIALOG_WIDTH = 454; // Default dialog width when enough space.
         private const int DIALOG_HEIGHT = 100; // Minimum dialog height.
         private const int BUTTON_HEIGHT = 24; // Fixed button height.
-        private const int BUTTON_WIDTH = 117; // Minimum button width.
+        private const int BUTTON_WIDTH = 117; // Default button width when enough space.
 
         private const int ICON_SIZE = 64;
         private const int ICON_MARGIN = 5; // Space between icon and text.
         private const int BUTTON_MARGIN = 3; // Space between buttons.
 
+        private int _maxDialogWidth; // Calculated dialog width based on parent container width.
+        private int _maxDialogHeight; // Calculated dialog height based on auto sized label height.
         private int _maxIconSize; // Calculated max icon size.
-        private int _maxButtonWidth; // Calculated max button width based on text width.
+        private int _maxButtonWidth; // Calculated max button width.
 
         private readonly List<DialogButton> _buttons;
         private readonly FormattedLabel _label;
@@ -74,22 +76,23 @@ namespace Blish_HUD.Extended {
             this.Size = parent.Size;
 
             _maxIconSize = icon == null ? 0 : ICON_SIZE;
+            _maxDialogWidth = CalculateWidth();
 
             var labelPadding = _maxIconSize + Panel.RIGHT_PADDING * 10;
-            var labelWidth = DIALOG_WIDTH - labelPadding;
-            if (this.Parent.Width < DIALOG_WIDTH) { // Adjust to small parent container.
-                labelWidth = this.Parent.Width - labelPadding;
-                if (labelWidth <= 0)
-                    throw new Exception($"[{nameof(StandardDialog)}] Parent container width is too small.");
-            }
+            var labelWidth = _maxDialogWidth - labelPadding;
+
+            if (labelWidth <= 0)
+                throw new Exception($"[{nameof(StandardDialog)}] Parent container width is too small.");
 
             _label = label.SetWidth(labelWidth).AutoSizeHeight().Wrap().Build();
 
-            if (_label.Height > this.Parent.Height)
-                throw new Exception($"[{nameof(StandardDialog)}] Parameter '{nameof(label)}' exceeded parent container height.");
-
-            if (_label.Height == 0)
+            if (_label.Height <= 0)
                 throw new ArgumentException($"[{nameof(StandardDialog)}] Parameter '{nameof(label)}' must have non-empty text or its height failed to calculate.", nameof(label));
+
+            _maxDialogHeight = CalculateHeight(); // Calculate dialog height now based on auto sized label height.
+
+            if (_maxDialogHeight > this.Parent.ContentRegion.Height - Panel.TOP_PADDING * 2)
+                throw new Exception($"[{nameof(StandardDialog)}] Parameter '{nameof(label)}' exceeded parent container height.");
 
             // Defaulting to OK button if no buttons provided to ensure there's always a way to close the prompt.
             if (buttons == null || buttons.Count == 0)
@@ -294,8 +297,17 @@ namespace Blish_HUD.Extended {
             }
         }
 
+        private int CalculateWidth() {
+            var dialogWidth = DIALOG_WIDTH;
+            var dialogMargin = Panel.RIGHT_PADDING * 4 + _maxIconSize + ICON_MARGIN + Panel.RIGHT_PADDING * 2;
+            if (this.Parent.ContentRegion.Width < DIALOG_WIDTH + dialogMargin) { // Adjust to small parent container.
+                dialogWidth = this.Parent.ContentRegion.Width - dialogMargin;
+            }
+            return dialogWidth;
+        }
+
         private int CalculateHeight() {
-            var textHeight = _label.Size.Y < DIALOG_HEIGHT ? DIALOG_HEIGHT : _label.Size.Y;
+            var textHeight = _label.Height < DIALOG_HEIGHT ? DIALOG_HEIGHT : _label.Height;
             return (textHeight > _maxIconSize ? textHeight : textHeight + _maxIconSize)
                     + BUTTON_HEIGHT + Panel.TOP_PADDING * 4;
         }
@@ -311,7 +323,7 @@ namespace Blish_HUD.Extended {
 
             // Container
             // Calculate background bounds
-            var bgSize = new Point(DIALOG_WIDTH, CalculateHeight());
+            var bgSize = new Point(_maxDialogWidth, _maxDialogHeight);
             var bgTextureSize = new Point(bgSize.X < _bgTextureBounds.Width ? bgSize.X : _bgTextureBounds.Width,
                                           bgSize.Y < _bgTextureBounds.Height ? bgSize.Y : _bgTextureBounds.Height); // Clamp to max texture bounds.
             var bgTexturePos = new Point((bounds.Width - bgTextureSize.X) / 2, (bounds.Height - bgTextureSize.Y) / 2);
@@ -355,9 +367,7 @@ namespace Blish_HUD.Extended {
                 Text = text,
                 Enabled = false
             };
-            _button.Click += (o, e) => {
-                DoClick();
-            };
+            _button.Click += (o, e) => DoClick();
         }
 
         internal void DoClick() {
