@@ -346,8 +346,8 @@ namespace Blish_HUD.Extended {
                 );
                 int texWidth = icon.Width;
                 int texHeight = icon.Height;
-                float scale = Math.Min((float)_maxIconSize / texWidth,
-                                       (float)_maxIconSize / texHeight);
+                float scale = Math.Min(1f, Math.Min((float)_maxIconSize / texWidth,
+                                                    (float)_maxIconSize / texHeight)); // Only scale down.
                 int drawWidth = (int)Math.Round(texWidth * scale);
                 int drawHeight = (int)Math.Round(texHeight * scale);
                 int x = slotBounds.Left + (slotBounds.Width - drawWidth) / 2;
