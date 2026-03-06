@@ -12,16 +12,6 @@ using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 namespace Blish_HUD.Extended {
     /// <summary>
-    /// Specifies default icons that can be displayed in a dialog box, specifically <see cref="StandardDialog"/>.
-    /// </summary>
-    public enum DialogIcon {
-        None,
-        Exclamation,
-        Question,
-        Present
-    }
-
-    /// <summary>
     /// Represents a modal prompt that displays a message and allows user interaction through buttons.
     /// </summary>
     /// <remarks>
@@ -32,6 +22,16 @@ namespace Blish_HUD.Extended {
     /// <seealso cref="Keys.Escape"/> closes the prompt silently.
     /// </remarks>
     public class StandardDialog : Container {
+        /// <summary>
+        /// Specifies default icons that can be displayed in a <see cref="StandardDialog"/>.
+        /// </summary>
+        public enum DialogIcon {
+            None,
+            Exclamation,
+            Question,
+            Present
+        }
+
         private static Texture2D _questionIcon;
         private static Texture2D _exclamationIcon;
         private static Texture2D _presentIcon;
@@ -344,66 +344,71 @@ namespace Blish_HUD.Extended {
             _label.Location = new Point(bgBounds.Left + textPos.X, bgBounds.Y + textPos.Y);
             this.CalculateButtonLayout();
         }
-    }
 
-    /// <summary>
-    /// Represents a button that can be added to a dialog, specifically <see cref="StandardDialog"/>.
-    /// </summary>
-    public sealed class DialogButton {
-        public event EventHandler<MouseEventArgs> Click;
+        /// <summary>
+        /// Represents a button that can be added to a <see cref="StandardDialog"/>.
+        /// </summary>
+        public sealed class DialogButton {
+            public event EventHandler<MouseEventArgs> Click;
 
-        internal string Text;
-        internal bool Selected;
+            internal string Text;
+            internal bool Selected;
 
-        private Action _callback;
-        private StandardButton _button;
+            private Action _callback;
+            private StandardButton _button;
 
-        private DialogButton(string text) {
-            if (string.IsNullOrEmpty(text))
-                throw new ArgumentNullException(nameof(text), $"[{nameof(DialogButton)}] Parameter '{nameof(text)}' cannot be null or empty.");
+            private DialogButton(string text) {
+                if (string.IsNullOrEmpty(text))
+                    throw new ArgumentNullException(nameof(text), $"[{nameof(DialogButton)}] Parameter '{nameof(text)}' cannot be null or empty.");
 
-            Text = text;
-            _button = new StandardButton() {
-                Text = text,
-                Enabled = false
-            };
-            _button.Click += (o, e) => DoClick();
+                Text = text;
+                _button = new StandardButton() {
+                    Text = text,
+                    Enabled = false
+                };
+                _button.Click += (o, e) => DoClick();
+            }
+
+            internal void DoClick() {
+                GameService.Content.PlaySoundEffectByName("button-click");
+                _callback?.Invoke();
+                Click?.Invoke(this, null);
+            }
+
+            internal void Transform(Container parent, Rectangle bounds) {
+                _button.Parent = parent;
+                _button.Location = bounds.Location;
+                _button.Size = bounds.Size;
+                _button.Enabled = true;
+            }
+
+            public DialogButton Action(Action callback) {
+                _callback = callback;
+                return this;
+            }
+
+            public DialogButton Select(bool selected = true) {
+                Selected = selected;
+                _button.BackgroundColor = selected ? new Color(192, 216, 255, 217) : Color.Transparent;
+                return this;
+            }
+
+            public static DialogButton OK => new DialogButton(Resources.Action_OK);
+            public static DialogButton Confirm => new DialogButton(Resources.Action_Confirm);
+            public static DialogButton Accept => new DialogButton(Resources.Action_Accept);
+            public static DialogButton Cancel => new DialogButton(Resources.Action_Cancel);
+            public static DialogButton Yes => new DialogButton(Resources.Action_Yes);
+            public static DialogButton No => new DialogButton(Resources.Action_No);
+            public static DialogButton Ignore => new DialogButton(Resources.Action_Ignore);
+            public static DialogButton Close => new DialogButton(Resources.Action_Close);
+            public static DialogButton Apply => new DialogButton(Resources.Action_Apply);
+            public static DialogButton Decline => new DialogButton(Resources.Action_Decline);
+            /// <summary>
+            /// Creates a <see cref="DialogButton"/> with the specified display text.
+            /// </summary>
+            /// <param name="text">Text on the button.</param>
+            /// <returns>A new <see cref="DialogButton"/> instance.</returns>
+            public static DialogButton Create(string text) => new DialogButton(text);
         }
-
-        internal void DoClick() {
-            GameService.Content.PlaySoundEffectByName("button-click");
-            _callback?.Invoke();
-            Click?.Invoke(this, null);
-        }
-
-        internal void Transform(Container parent, Rectangle bounds) {
-            _button.Parent = parent;
-            _button.Location = bounds.Location;
-            _button.Size = bounds.Size;
-            _button.Enabled = true;
-        }
-
-        public DialogButton Action(Action callback) {
-            _callback = callback;
-            return this;
-        }
-
-        public DialogButton Select(bool selected = true) {
-            Selected = selected;
-            _button.BackgroundColor = selected ? new Color(192, 216, 255, 217) : Color.Transparent;
-            return this;
-        }
-
-        public static DialogButton OK => new DialogButton(Resources.Action_OK);
-        public static DialogButton Confirm => new DialogButton(Resources.Action_Confirm);
-        public static DialogButton Accept => new DialogButton(Resources.Action_Accept);
-        public static DialogButton Cancel => new DialogButton(Resources.Action_Cancel);
-        public static DialogButton Yes => new DialogButton(Resources.Action_Yes);
-        public static DialogButton No => new DialogButton(Resources.Action_No);
-        public static DialogButton Ignore => new DialogButton(Resources.Action_Ignore);
-        public static DialogButton Close => new DialogButton(Resources.Action_Close);
-        public static DialogButton Apply => new DialogButton(Resources.Action_Apply);
-        public static DialogButton Decline => new DialogButton(Resources.Action_Decline);
-        public static DialogButton Create(string text) => new DialogButton(text);
     }
 }
